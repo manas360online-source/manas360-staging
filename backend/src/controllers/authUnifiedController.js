@@ -309,11 +309,57 @@ export async function adminLoginInitiate(req, res) {
       });
     }
 
+    // Check if this admin has MFA enabled
+    const mfaEnabledResult = await pool.query(
+      'SELECT mfa_enabled FROM users WHERE id = $1::uuid',
+      [user.id]
+    );
+    const isMfaEnabled = mfaEnabledResult.rows[0]?.mfa_enabled || false;
+
+    // If MFA is NOT enabled, allow direct login
+    if (!isMfaEnabled) {
+      const userWithRole = await getUserWithPermissions({ email });
+      const tokenId = crypto.randomUUID();
+      const familyId = tokenId;
+      const accessToken = buildAccessToken({ ...userWithRole });
+      const refreshToken = buildRefreshToken(userWithRole.id, tokenId, familyId);
+
+      await persistRefreshToken({ tokenId, userId: userWithRole.id, refreshToken, familyId, req });
+
+      await pool.query(
+        'UPDATE users SET last_login_at = NOW(), last_login_ip = $1::inet WHERE id = $2::uuid',
+        [req.ip || null, userWithRole.id]
+      );
+
+      const csrfToken = issueAuthCookies(res, { accessToken, refreshToken });
+
+      await logSecurityEvent('admin_login_success', {
+        email,
+        mfaEnabled: false,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'] || null
+      });
+
+      return res.json({
+        success: true,
+        message: 'Admin login successful',
+        mfaRequired: false,
+        csrfToken,
+        user: {
+          id: userWithRole.id,
+          email: userWithRole.email,
+          role: userWithRole.role,
+          permissions: userWithRole.permissions || []
+        }
+      });
+    }
+
+    // If MFA IS enabled, proceed to MFA challenge
     const mfaToken = await createAdminMfaChallenge({ userId: user.id, req });
 
     return res.json({
       success: true,
-      message: 'Primary authentication successful. MFA required.',
+      message: 'Primary authentication successful. MFA code required.',
       mfaRequired: true,
       mfaToken
     });

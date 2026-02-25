@@ -40,7 +40,19 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onNaviga
         otp: otp.trim() || undefined
       });
 
-      if (response?.data?.mfaRequired && response?.data?.mfaToken) {
+      // If MFA is not required, login is successful
+      if (!response?.data?.mfaRequired) {
+        setSuccess(true);
+        if (onLoginSuccess) {
+          onLoginSuccess('cookie-auth', response?.data?.user);
+        } else if (onNavigate) {
+          onNavigate('admin-dashboard');
+        }
+        return;
+      }
+
+      // If MFA is required, proceed to MFA form
+      if (response?.data?.mfaToken) {
         setMfaToken(response.data.mfaToken);
         setMfaRequired(true);
         setError('');
@@ -52,7 +64,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onNaviga
     } finally {
       setLoading(false);
     }
-  }, [email, password, otp]);
+  }, [email, password, otp, onLoginSuccess, onNavigate]);
 
   const handleMfaSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

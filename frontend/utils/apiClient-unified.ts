@@ -162,7 +162,13 @@ export const api = {
     getUsers: (filters = {}) => apiGet('/admin/users', { params: filters }),
     getUserById: (userId: string) => apiGet(`/admin/users/${userId}`),
     suspendUser: (userId: string) => apiPut(`/admin/users/${userId}/suspend`),
-    unsuspendUser: (userId: string) => apiDelete(`/admin/users/${userId}/suspend`)
+    unsuspendUser: (userId: string) => apiDelete(`/admin/users/${userId}/suspend`),
+    getMfaStatus: () => apiGet('/admin/mfa/status'),
+    generateMfaSecret: () => apiPost('/admin/mfa/generate-secret', {}),
+    enableMfa: (payload: { secret: string; mfaCode: string }) =>
+      apiPost('/admin/mfa/enable', payload),
+    disableMfa: (payload: Record<string, unknown>) =>
+      apiPost('/admin/mfa/disable', payload)
   },
 
   analytics: {

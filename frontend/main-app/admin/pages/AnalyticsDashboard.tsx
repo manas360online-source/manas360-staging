@@ -22,6 +22,7 @@ import { PlatformMetricsView } from '../components/PlatformMetricsView';
 import { UserManagement } from '../components/UserManagement';
 import { SubscriptionManagement } from '../components/SubscriptionManagement';
 import { UserBehaviorView } from '../components/UserBehaviorView';
+import { AdminSettings } from './AdminSettings';
 import { useEffect } from 'react';
 import { eventTracker, AnalyticsEvents } from '../services/eventTracker';
 import analyticsApi from '../services/analyticsApi';
@@ -196,6 +197,7 @@ export const AnalyticsDashboard: React.FC = () => {
                                     {activeSection === 'admin_users' && 'User Management'}
                                     {activeSection === 'admin_subs' && 'Subscription Plans'}
                                     {activeSection === 'user_behavior' && 'User Behavior Analytics'}
+                                    {activeSection === 'settings' && 'Admin Settings'}
                                 </p>
                             </div>
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -384,6 +386,13 @@ export const AnalyticsDashboard: React.FC = () => {
                             {activeSection === 'user_behavior' && (
                                 <section>
                                     <UserBehaviorView />
+                                </section>
+                            )}
+
+                            {/* Admin Settings */}
+                            {activeSection === 'settings' && (
+                                <section>
+                                    <AdminSettings />
                                 </section>
                             )}
                         </div>
