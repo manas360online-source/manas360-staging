@@ -92,10 +92,11 @@ export function checkPermission(requiredPermissions = []) {
 
     return async (req, res, next) => {
         try {
-            const userId = req.user?.id;
-            const roleId = req.user?.roleId;
+            const userId = req.user?.userId || req.user?.id;
+            const userPermissions = req.user?.permissions || [];
+            const userRole = req.user?.role;
 
-            if (!userId || !roleId) {
+            if (!userId) {
                 return res.status(401).json({
                     success: false,
                     error: 'Unauthorized',
@@ -103,18 +104,12 @@ export function checkPermission(requiredPermissions = []) {
                 });
             }
 
-            // Fetch user permissions through role
-            const query = `
-                SELECT DISTINCT p.name
-                FROM role_permissions rp
-                JOIN permissions p ON rp.permission_id = p.id
-                WHERE rp.role_id = $1
-            `;
+            // Check if user is admin - admins have all permissions
+            if (userRole === 'admin') {
+                return next();
+            }
 
-            const result = await pool.query(query, [roleId]);
-            const userPermissions = result.rows.map(row => row.name);
-
-            // Check if user has required permission
+            // Check if user has required permission from token
             const hasPermission = permissions.some(perm => 
                 userPermissions.includes(perm)
             );
@@ -134,7 +129,6 @@ export function checkPermission(requiredPermissions = []) {
                 });
             }
 
-            req.user.permissions = userPermissions;
             next();
 
         } catch (error) {

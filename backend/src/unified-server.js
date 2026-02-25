@@ -31,7 +31,7 @@ import { pool } from './config/database.js';
 
 // Import middleware
 import { authenticateToken, refreshTokenHandler } from './middleware/authMiddleware-unified.js';
-import { authorizeRole, authorizePermission } from './middleware/rbacMiddleware.js';
+import { authorizeRole, checkPermission } from './middleware/rbacMiddleware.js';
 import { requireSubscription } from './middleware/subscriptionGating.js';
 import { globalErrorHandler, asyncHandler } from './middleware/errorHandler.js';
 
@@ -223,7 +223,7 @@ app.use('/api/v1/admin', authorizeRole(['admin']), adminRoutes);
 
 app.use(
   '/api/v1/analytics',
-  authorizePermission(['view_analytics']),
+  checkPermission(['view_analytics']),
   analyticsRoutes
 );
 
