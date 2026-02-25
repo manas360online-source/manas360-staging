@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# ============================================
+# MANAS360 Admin Dashboard - Quick Start
+# ============================================
+
+echo "🚀 Starting MANAS360 Admin Dashboard..."
+echo ""
+
+# Step 1: Ensure clean ports
+echo "🧹 Cleaning ports..."
+lsof -i :3001 -t 2>/dev/null | xargs kill -9 2>/dev/null || true
+lsof -i :3000 -t 2>/dev/null | xargs kill -9 2>/dev/null || true
+sleep 2
+echo "✅ Ports cleaned"
+echo ""
+
+# Step 2: Setup backend
+echo "📦 Starting Backend..."
+echo "   Location: backend/admin"
+echo "   Port: 3001"
+echo "   CORS: localhost:3000-3010"
+echo ""
+
+cd "$(dirname "$0")/backend/admin"
+
+# Check if node_modules exists
+if [ ! -d "node_modules" ]; then
+    echo "📥 Installing backend dependencies..."
+    npm install
+    echo ""
+fi
+
+# Start backend in background
+npm run dev &
+BACKEND_PID=$!
+echo "✅ Backend started (PID: $BACKEND_PID)"
+sleep 3
+echo ""
+
+# Step 3: Setup merged frontend
+echo "📦 Starting Frontend..."
+echo "   Location: frontend/main-app (merged admin UI)"
+echo "   Port: 3000"
+echo ""
+
+cd "$(dirname "$0")"
+
+# Check if root node_modules exists
+if [ ! -d "node_modules" ]; then
+    echo "📥 Installing root dependencies..."
+    npm install
+    echo ""
+fi
+
+# Start root Vite client
+npm run client &
+FRONTEND_PID=$!
+echo "✅ Frontend started (PID: $FRONTEND_PID)"
+echo ""
+
+# Step 4: Status
+echo "============================================"
+echo "✅ MANAS360 Admin Dashboard is starting!"
+echo "============================================"
+echo ""
+echo "Backend:  http://localhost:3001"
+echo "Frontend: http://localhost:3000"
+echo ""
+echo "📝 Logs:"
+echo "   Backend:  Check terminal"
+echo "   Frontend: Check terminal"
+echo ""
+echo "🌐 Open your browser: http://localhost:3000/#/en/admin-dashboard"
+echo ""
+echo "Press Ctrl+C to stop all services"
+echo ""
+
+# Wait for processes
+wait

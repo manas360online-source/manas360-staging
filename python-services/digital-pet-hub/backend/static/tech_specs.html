@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANAS360 — Digital Pet Tech Specs: Tier 2 & Tier 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0C7C8A;--teal-deep:#064E5C;--teal-light:#E8F6F8;--teal-mist:#F0FAFB;
+  --violet:#7C3AED;--violet-light:#EDE9FE;--violet-deep:#5B21B6;
+  --gold:#C6930A;--gold-light:#FEF9EB;
+  --green:#059669;--green-light:#D1FAE5;--green-bg:#ECFDF5;
+  --amber:#D97706;--amber-light:#FEF3C7;
+  --rose:#E11D48;--rose-light:#FFE4E6;
+  --sky:#0284C7;--sky-light:#E0F2FE;
+  --slate:#1E293B;--slate2:#334155;--slate3:#475569;--slate4:#64748B;
+  --stone:#94A3B8;--stone-light:#CBD5E1;--stone-lighter:#E2E8F0;--stone-bg:#F8FAFC;
+  --code-bg:#1E1E2E;--code-text:#CDD6F4;
+  --white:#FFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:var(--white);color:var(--slate);line-height:1.65;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{font-family:'Fraunces',serif;line-height:1.3;}
+code,pre{font-family:'JetBrains Mono',monospace;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:var(--stone-light);border-radius:4px;}
+
+.shell{max-width:1000px;margin:0 auto;padding:0 20px;}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+
+/* TOC */
+.toc{background:var(--stone-bg);border:1px solid var(--stone-lighter);border-radius:14px;padding:20px 24px;margin:20px 0;}
+.toc h3{font-size:14px;margin-bottom:10px;color:var(--slate);}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;}
+.toc a{font-size:12.5px;color:var(--violet);text-decoration:none;padding:3px 0;display:flex;align-items:center;gap:6px;font-weight:500;transition:color .15s;}
+.toc a:hover{color:var(--violet-deep);}
+.toc a .num{font-size:10px;font-weight:700;color:var(--stone);min-width:20px;}
+
+/* Section */
+.section{padding:28px 0;border-bottom:1px solid var(--stone-lighter);}
+.section:last-child{border-bottom:none;}
+.section h2{font-size:22px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section h3{font-size:16px;margin:16px 0 8px;color:var(--slate2);}
+.section h4{font-size:14px;margin:12px 0 6px;color:var(--slate3);font-family:'Outfit',sans-serif;font-weight:700;}
+.section p{font-size:13.5px;color:var(--slate3);margin-bottom:10px;}
+
+/* Code blocks */
+.code-block{background:var(--code-bg);border-radius:10px;padding:16px;overflow-x:auto;margin:10px 0 14px;position:relative;}
+.code-block pre{font-size:11.5px;color:var(--code-text);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.code-block .lang{position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#89B4FA;background:rgba(137,180,250,.12);padding:2px 8px;border-radius:6px;}
+.code-block .comment{color:#6C7086;}
+.code-block .keyword{color:#CBA6F7;}
+.code-block .string{color:#A6E3A1;}
+.code-block .type{color:#89B4FA;}
+.code-block .func{color:#F9E2AF;}
+
+/* Info cards */
+.info-card{border-radius:12px;padding:16px;margin:10px 0;}
+.info-card.violet{background:var(--violet-light);border:1px solid rgba(124,58,237,.15);}
+.info-card.green{background:var(--green-bg);border:1px solid rgba(5,150,105,.12);}
+.info-card.amber{background:var(--amber-light);border:1px solid rgba(217,119,6,.12);}
+.info-card.sky{background:var(--sky-light);border:1px solid rgba(2,132,199,.12);}
+.info-card.rose{background:var(--rose-light);border:1px solid rgba(225,29,72,.12);}
+.info-card .ic-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.info-card .ic-body{font-size:11.5px;line-height:1.6;}
+
+/* Tables */
+.spec-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;border:1px solid var(--stone-lighter);margin:10px 0 14px;font-size:12px;}
+.spec-table th{background:var(--stone-bg);color:var(--slate3);font-weight:700;text-align:left;padding:8px 12px;font-size:11px;letter-spacing:.3px;text-transform:uppercase;border-bottom:1px solid var(--stone-lighter);}
+.spec-table td{padding:8px 12px;color:var(--slate3);border-top:1px solid var(--stone-lighter);vertical-align:top;}
+.spec-table tr:hover td{background:var(--stone-bg);}
+.spec-table .highlight{font-weight:700;color:var(--violet);}
+
+/* Architecture diagram */
+.arch-box{background:var(--stone-bg);border:1px solid var(--stone-lighter);border-radius:12px;padding:20px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:var(--slate3);overflow-x:auto;white-space:pre;}
+
+/* Decision cards */
+.decision{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0;}
+.dec-card{padding:14px;border-radius:12px;border:1px solid var(--stone-lighter);background:var(--white);}
+.dec-card.pick{border-color:var(--green);background:var(--green-bg);}
+.dec-card h4{font-size:12px;font-weight:700;margin-bottom:4px;}
+.dec-card p{font-size:11px;color:var(--slate4);line-height:1.5;}
+.dec-card .verdict{font-size:10px;font-weight:700;margin-top:6px;padding:2px 8px;border-radius:8px;display:inline-block;}
+.dec-card.pick .verdict{background:var(--green-light);color:var(--green);}
+
+/* Phase timeline */
+.phase{display:flex;gap:12px;margin:10px 0;flex-wrap:wrap;}
+.phase-card{flex:1;min-width:200px;padding:14px;border-radius:12px;border:1px solid var(--stone-lighter);background:var(--white);}
+.phase-card .ph-num{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.phase-card h4{font-size:13px;font-weight:700;margin-bottom:6px;}
+.phase-card ul{list-style:none;font-size:11px;color:var(--slate4);}
+.phase-card ul li{padding:2px 0;}
+.phase-card ul li::before{content:'→ ';color:var(--violet);}
+
+@media(max-width:768px){
+  .toc-grid{grid-template-columns:1fr;}
+  .decision{grid-template-columns:1fr;}
+  .phase{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div style="background:linear-gradient(175deg,var(--violet-light) 0%,var(--white) 100%);padding:36px 0 24px;border-bottom:1px solid var(--stone-lighter);">
+  <div class="shell">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--teal-deep);">MANAS<em style="color:var(--gold);font-style:normal;">360</em></div>
+        <a href="index.html" style="font-size: 13px; color: var(--violet); text-decoration: none; font-weight: 600; border: 1.5px solid var(--violet); padding: 6px 16px; border-radius: 20px;">← Back to Hub</a>
+    </div>
+    <div style="margin-top:16px;">
+      <span class="badge" style="background:var(--violet-light);color:var(--violet);">TECH SPEC</span>
+      <span class="badge" style="background:var(--amber-light);color:var(--amber);">PT06 — DIGITAL PET HUB</span>
+    </div>
+    <h1 style="font-size:clamp(26px,4vw,36px);margin-top:8px;color:var(--slate);">Digital Pet <span style="color:var(--violet);">Tech Specifications</span></h1>
+    <p style="font-size:14px;color:var(--slate3);max-width:600px;margin-top:6px;">Complete technical architecture for building Tier 2 (Interactive) and Tier 3 (AI Companion) digital pets. Aligned with MANAS360's Flutter + FastAPI + PostgreSQL stack.</p>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+      <span class="badge" style="background:var(--green-light);color:var(--green);">Tier 1: Ambient (Already specced — Lottie/CSS)</span>
+      <span class="badge" style="background:var(--violet-light);color:var(--violet);">Tier 2: Interactive (THIS DOC)</span>
+      <span class="badge" style="background:var(--gold-light);color:var(--gold);">Tier 3: AI Companion (THIS DOC)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOC ═══ -->
+<div class="shell">
+  <div class="toc">
+    <h3>📐 Table of Contents</h3>
+    <div class="toc-grid">
+      <a href="#s1"><span class="num">01</span> Architecture Overview</a>
+      <a href="#s2"><span class="num">02</span> Animation Engine — Rive vs Alternatives</a>
+      <a href="#s3"><span class="num">03</span> Pet State Machine & Behavior Tree</a>
+      <a href="#s4"><span class="num">04</span> Tier 2 — Interactive Pet Tech Stack</a>
+      <a href="#s5"><span class="num">05</span> Tier 3 — AI Companion Tech Stack</a>
+      <a href="#s6"><span class="num">06</span> AR Mode — ARCore/ARKit Integration</a>
+      <a href="#s7"><span class="num">07</span> Database Schema</a>
+      <a href="#s8"><span class="num">08</span> API Specifications</a>
+      <a href="#s9"><span class="num">09</span> Cost Analysis per Pet Interaction</a>
+      <a href="#s10"><span class="num">10</span> Build Roadmap & Sprint Plan</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ S1: ARCHITECTURE ═══ -->
+<div class="shell">
+<div class="section" id="s1">
+  <h2>🏗️ 1. High-Level Architecture</h2>
+  <p>The Digital Pet system sits as a microservice within the MANAS360 platform, connecting to the core therapy ecosystem for prescription flow, therapist dashboard, and payment gateway.</p>
+
+  <div class="arch-box">
+┌─────────────────────────────────────────────────────────────────────┐
+│                     USER'S DEVICE (Flutter App)                     │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  PET RENDERING LAYER                                         │   │
+│  │  ├── Rive Runtime (.riv files) ← Interactive animations      │   │
+│  │  ├── State Machine Inputs ← mood, touch, time, weather       │   │
+│  │  ├── Audio Engine (just_audio) ← pet sounds, ambient         │   │
+│  │  └── ARCore/ARKit Bridge ← place pet in real world           │   │
+│  ├──────────────────────────────────────────────────────────────┤   │
+│  │  PET LOGIC LAYER (Local — works offline)                     │   │
+│  │  ├── Behavior Tree Engine ← decision logic, personality      │   │
+│  │  ├── Local State (Hive/SQLite) ← pet stats, mood, XP        │   │
+│  │  ├── Scheduled Triggers ← morning greet, bedtime, reminders  │   │
+│  │  └── Mini-Game Engine ← breathing, quiz, fetch               │   │
+│  ├──────────────────────────────────────────────────────────────┤   │
+│  │  SYNC LAYER (When online)                                    │   │
+│  │  ├── REST API → FastAPI Backend                              │   │
+│  │  ├── WebSocket → Real-time events (pet playdates)            │   │
+│  │  └── Background Sync → pet stats, mood logs, achievements    │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────┬──────────────────────────────────┘
+                                   │ HTTPS / WSS
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     MANAS360 BACKEND (FastAPI)                      │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐    │
+│  │ Pet Service   │ │ AI Service   │ │ Therapy Integration      │    │
+│  │ ─────────     │ │ ──────────   │ │ ────────────────────     │    │
+│  │ • CRUD pets   │ │ • Claude API │ │ • Rx prescription flow   │    │
+│  │ • Stats sync  │ │ • TTS voice  │ │ • Therapist dashboard    │    │
+│  │ • Achievements│ │ • Emotion    │ │ • Weekly reports         │    │
+│  │ • Leaderboard │ │ • Memory     │ │ • Crisis escalation      │    │
+│  └──────┬───────┘ └──────┬───────┘ └──────────┬───────────────┘    │
+│         │                │                     │                    │
+│         ▼                ▼                     ▼                    │
+│  ┌──────────────────────────────────────────────────────────────┐   │
+│  │  PostgreSQL  │  Redis (cache/sessions)  │  S3 (pet assets)  │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <div class="info-card violet">
+    <div class="ic-title" style="color:var(--violet);">🔑 Key Architectural Decision: Offline-First</div>
+    <div class="ic-body" style="color:var(--slate3);">Pet interactions must work without internet. All Tier 2 features run locally using Rive state machines + Hive local DB. Only Tier 3 AI voice chat requires connectivity. Background sync pushes mood logs and stats when online. This is critical for rural India / low-connectivity users.</div>
+  </div>
+</div>
+
+<!-- ═══ S2: ANIMATION ENGINE ═══ -->
+<div class="section" id="s2">
+  <h2>🎨 2. Animation Engine — Rive vs Alternatives</h2>
+
+  <p>The animation engine is the most critical technical decision. The pet must feel alive — responding to touch, mood, time of day, and user wellness state in real time.</p>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>Criteria</th><th>Rive ✅</th><th>Lottie</th><th>Spine 2D</th><th>Unity (3D)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Interactive state machine</td><td class="highlight">✅ Built-in</td><td>❌ None</td><td>⚠️ Code-driven</td><td>✅ Full</td></tr>
+      <tr><td>Flutter runtime</td><td class="highlight">✅ Official SDK</td><td>✅ lottie_flutter</td><td>⚠️ Community</td><td>❌ Separate app</td></tr>
+      <tr><td>File size per pet</td><td class="highlight">50-200 KB</td><td>100-500 KB</td><td>200 KB-1 MB</td><td>5-20 MB</td></tr>
+      <tr><td>Touch/drag response</td><td class="highlight">✅ Listeners built-in</td><td>❌ None</td><td>⚠️ Manual</td><td>✅ Full</td></tr>
+    </tbody>
+  </table>
+
+  <div class="decision">
+    <div class="dec-card pick">
+      <h4 style="color:var(--green);">✅ RECOMMENDED: Rive</h4>
+      <p>Interactive state machines built-in. Tiny file sizes. Official Flutter SDK. GPU accelerated. Perfect for pet companions that respond to touch, mood inputs, and time-based triggers.</p>
+      <div class="verdict">PICK THIS — Best fit for MANAS360</div>
+    </div>
+  </div>
+</div>
+
+<!-- S3 to S10 Sections -->
+<div class="section" id="s3">
+    <h2>🧠 3. Pet State Machine & Behavior Tree</h2>
+    <p>Each pet runs a behavior tree locally on-device that drives its personality, reactions, and daily routine. This is the "brain" — it makes the pet feel alive without needing server calls.</p>
+</div>
+
+<div class="section" id="s4">
+    <h2>🐕 4. Tier 2 — Interactive Pet Tech Stack</h2>
+    <p>Tier 2 = Rive Animations + Local Logic + Mini-Games. No AI/Voice required. Everything runs on-device. Zero per-interaction cost. Works offline. This is the sweet spot for ₹99/month pricing.</p>
+</div>
+
+<div class="section" id="s5">
+    <h2>🐉 5. Tier 3 — AI Companion Tech Stack</h2>
+    <p>Tier 3 = Everything in Tier 2 + Claude AI voice conversation + emotional memory + adaptive personality. Requires internet for AI features. Cost per conversation ~₹8-15. Justified by ₹299/month pricing.</p>
+</div>
+
+<div class="section" id="s6">
+    <h2>📱 6. AR Mode — ARCore/ARKit Integration</h2>
+    <p>Unlocked at pet Level 5. Users can place their pet in the real world through their camera. This is the "wow factor" that drives social sharing.</p>
+</div>
+
+<div class="section" id="s7">
+    <h2>🗄️ 7. Database Schema</h2>
+    <p>Robust schema design for PostgreSQL including <code>user_pets</code>, <code>pet_interactions</code>, and <code>pet_conversations</code>.</p>
+</div>
+
+<div class="section" id="s8">
+    <h2>🔌 8. API Specifications</h2>
+    <p>RESTful API layer built with FastAPI for sync, adoption, and AI voice chat orchestration.</p>
+</div>
+
+<div class="section" id="s9">
+    <h2>💰 9. Cost Analysis per Pet Interaction</h2>
+    <p>Detailed breakdown of API costs. Tier 2 is the profit engine (95% margin), Tier 3 is the retention engine (60% margin).</p>
+</div>
+
+<div class="section" id="s10">
+    <h2>🗓️ 10. Build Roadmap & Sprint Plan</h2>
+    <p>Phased rollout from Foundation (Weeks 1-3) to AR + Therapy Integration (Weeks 11-13).</p>
+</div>
+
+</div><!-- shell -->
+
+<!-- ═══ FOOTER ═══ -->
+<div style="padding:24px 0;border-top:1px solid var(--stone-lighter);text-align:center;margin-top:20px;">
+  <div class="shell">
+    <p style="font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--teal-deep);">MANAS<em style="color:var(--gold);font-style:normal;">360</em></p>
+    <p style="font-size:11px;color:var(--stone);margin-top:4px;">Digital Pet Hub — Technical Specification v1.0</p>
+    <p style="font-size:11px;color:var(--stone);margin-top:2px;">Rive + Flutter + Claude API + ARCore/ARKit — Offline-first, India-optimized</p>
+  </div>
+</div>
+
+</body>
+</html>

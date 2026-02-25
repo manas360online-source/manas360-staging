@@ -1,0 +1,8 @@
+{
+  "name": "Group sessions for patient",
+  "description": "Secure, HIPAA-compliant HD video therapy platform enabling remote mental health services with integrated session management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

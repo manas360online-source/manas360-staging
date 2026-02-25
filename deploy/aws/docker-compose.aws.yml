@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.backend
+    container_name: manas360-backend
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - FRONTEND_URL=http://localhost:3000
+      - API_BASE_URL=http://localhost:5001
+      # HARDENED: DATABASE_URL now required - no hardcoded password fallback
+      # Inject via: docker-compose up --env-file .env.production
+      # Or: docker-compose -e DATABASE_URL="postgresql://..." up
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL must be set in environment}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in environment}
+      - PHONEPE_MERCHANT_ID=${PHONEPE_MERCHANT_ID:?PHONEPE_MERCHANT_ID required}
+      - PHONEPE_SALT_KEY=${PHONEPE_SALT_KEY:?PHONEPE_SALT_KEY required}
+
+  payment-backend:
+    build:
+      context: ../../backend/payment-gateway
+      dockerfile: Dockerfile
+    container_name: manas360-payment-backend
+    ports:
+      - "5002:5002"
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - CORS_ORIGIN=http://localhost:3000
+      # HARDENED: DATABASE_URL now required - no hardcoded password fallback
+      - DATABASE_URL=${PAYMENT_DATABASE_URL:?PAYMENT_DATABASE_URL must be set in environment}
+      - PHONEPE_MERCHANT_ID=${PHONEPE_MERCHANT_ID:?PHONEPE_MERCHANT_ID required}
+      - PHONEPE_SALT_KEY=${PHONEPE_SALT_KEY:?PHONEPE_SALT_KEY required}
+
+  frontend:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.frontend
+    container_name: manas360-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=http://localhost:5001/api
+      - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY:?VITE_GEMINI_API_KEY must be set in environment}
+    depends_on:
+      - backend
+      - payment-backend

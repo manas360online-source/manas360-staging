@@ -1,0 +1,8 @@
+{
+  "name": "Copy of VIDEO THERAPY SETUP - MANAS360 IMPLEMENTATION",
+  "description": "Secure, HIPAA-compliant HD video therapy platform enabling remote mental health services with integrated session management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

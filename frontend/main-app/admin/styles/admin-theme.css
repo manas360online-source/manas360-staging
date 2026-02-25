@@ -1,0 +1,10 @@
+/* Scoped CSS variables for Admin Dashboard to avoid global conflicts */
+.admin-theme-wrapper {
+    --calm-blue: #165C9C;
+    --calm-light-blue: #7CA5B8;
+    --calm-lavender: #E6E6FA;
+    --calm-sand: #F5F5DC;
+    --calm-text: #2C3E50;
+    --calm-bg: #F0F4F8;
+    --calm-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}

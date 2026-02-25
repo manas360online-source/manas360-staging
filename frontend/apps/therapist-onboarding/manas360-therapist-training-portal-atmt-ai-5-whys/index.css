@@ -1,0 +1,143 @@
+/* Global Styles for MANS360 Therapist Training Portal */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F5F7FA;
+  color: #2D3748;
+  line-height: 1.6;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #667EEA;
+  outline-offset: 2px;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Print styles for certificates */
+@media print {
+  body {
+    background: white;
+  }
+
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Custom Utilities for CBT Module */
+:root {
+  --primary: #3b82f6;
+  /* blue-500 */
+  --primary-hover: #2563eb;
+  /* blue-600 */
+  --accent: #f8fafc;
+  /* slate-50 */
+  --calm-bg: #F0F4F8;
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+.bg-calm-bg {
+  background-color: var(--calm-bg);
+}
+
+/* Mans colors placeholder if needed */
+.bg-mans-100 {
+  background-color: #e0e7ff;
+}
+
+.text-mans-800 {
+  color: #3730a3;
+}
+
+.text-mans-700 {
+  color: #4338ca;
+}
+
+.bg-mans-200 {
+  background-color: #c7d2fe;
+}
+
+.text-mans-600 {
+  color: #4f46e5;
+}
+
+.bg-mans-500 {
+  background-color: #6366f1;
+}
+
+.hover\:border-mans-200:hover {
+  border-color: #c7d2fe;
+}
+
+.group:hover .group-hover\:text-mans-600 {
+  color: #4f46e5;
+}

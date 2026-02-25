@@ -1,0 +1,8 @@
+
+{
+  "name": "Mitra AI",
+  "description": "A 24/7 emotional support companion providing coping strategies, crisis detection, and empathetic conversation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

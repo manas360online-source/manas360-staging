@@ -1,0 +1,15 @@
+
+name: manas360_digital_pet_hub
+description: PT06 Digital Pet Hub
+version: 1.0.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dio: ^5.4.0
+  hive: ^2.2.3
+  rive: ^0.12.3
+  flame: ^1.14.0

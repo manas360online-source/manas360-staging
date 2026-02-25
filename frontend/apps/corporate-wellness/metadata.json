@@ -1,0 +1,8 @@
+{
+  "name": "Corporate Wellness Platform",
+  "description": "A comprehensive B2B mental health and wellness platform for corporations featuring SSO integration, gamified wellness challenges with anonymized leaderboards, and an advanced ROI calculator for HR managers to track productivity and wellbeing gains while ensuring employee privacy.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

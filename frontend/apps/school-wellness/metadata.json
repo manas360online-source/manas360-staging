@@ -1,0 +1,9 @@
+
+{
+  "name": "School Wellness & Support Program",
+  "description": "A comprehensive academic wellness platform featuring student mental health tracking, class-based wellness challenges, and guardian consent management.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
