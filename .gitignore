@@ -1,3 +1,10 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+yarn.lock
+package-lock.json
+
 # Logs
 logs
 *.log
@@ -7,19 +14,57 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Build outputs
 dist
 dist-ssr
+build
 *.local
 .env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swo
+*~
+.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+.cache
+.parcel-cache
+.pnpm-store
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.*.example
+!.env.template
+!.env.example
+
+# Temporary files
+tmp/
+temp/
+*.tmp
