@@ -1,7 +1,0 @@
-{
-  "name": "MANAS360 Therapist Onboarding",
-  "description": "A professional multi-step onboarding platform for psychologists, psychiatrists, and therapists to set up their clinical profiles with AI-assisted bio generation.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
