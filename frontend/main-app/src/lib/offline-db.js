@@ -622,6 +622,8 @@ class SyncManager {
 
     const results = {
 
+      disabled: true,
+
       mood: { synced: 0, failed: 0 },
 
       journal: { synced: 0, failed: 0 },
@@ -632,71 +634,8 @@ class SyncManager {
 
     try {
 
-      // Sync mood entries
-
-      const pendingMood = await this.db.getAll('pending_mood_entries');
-
-      for (const entry of pendingMood) {
-
-        try {
-
-          await this._syncToServer('/api/mood/entries', entry.data);
-
-          await this.db.delete('pending_mood_entries', entry.id);
-
-          results.mood.synced++;
-
-        } catch (error) {
-
-          results.mood.failed++;
-
-        }
-
-      }
-
-      // Sync journal entries
-
-      const pendingJournal = await this.db.getAll('pending_journal_entries');
-
-      for (const entry of pendingJournal) {
-
-        try {
-
-          await this._syncToServer('/api/journal/entries', entry.data);
-
-          await this.db.delete('pending_journal_entries', entry.id);
-
-          results.journal.synced++;
-
-        } catch (error) {
-
-          results.journal.failed++;
-
-        }
-
-      }
-
-      // Sync assessments
-
-      const pendingAssessments = await this.db.getAll('pending_assessments');
-
-      for (const assessment of pendingAssessments) {
-
-        try {
-
-          await this._syncToServer('/api/assessments', assessment.data);
-
-          await this.db.delete('pending_assessments', assessment.id);
-
-          results.assessments.synced++;
-
-        } catch (error) {
-
-          results.assessments.failed++;
-
-        }
-
-      }
+      // Legacy offline sync endpoints were removed during /api/v1 contract lock.
+      // Keep pending entries local until corresponding v1 write endpoints are introduced.
 
       return { success: true, results };
 
@@ -710,15 +649,19 @@ class SyncManager {
 
   async _syncToServer(endpoint, data) {
 
+    const csrfToken = this._getCookie('csrf_token');
+
     const response = await fetch(endpoint, {
 
       method: 'POST',
+
+      credentials: 'include',
 
       headers: {
 
         'Content-Type': 'application/json',
 
-        'Authorization': `Bearer ${await this._getAuthToken()}`
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {})
 
       },
 
@@ -736,11 +679,18 @@ class SyncManager {
 
   }
 
-  async _getAuthToken() {
+  _getCookie(name) {
 
-    const state = await this.db.get('app_state', 'auth_token');
+    if (typeof document === 'undefined') return null;
 
-    return state?.value || '';
+    const cookie = document.cookie
+      .split(';')
+      .map((value) => value.trim())
+      .find((value) => value.startsWith(`${name}=`));
+
+    if (!cookie) return null;
+
+    return decodeURIComponent(cookie.split('=').slice(1).join('='));
 
   }
 

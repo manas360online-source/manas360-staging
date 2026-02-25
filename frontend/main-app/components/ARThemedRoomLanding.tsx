@@ -2,79 +2,45 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { storageService } from '../utils/storageService';
+import { api } from '../../utils/apiClient-unified';
 
-const AR_THEMES = [
-  {
-    id: 'boat-ocean',
-    title: 'Boat Near Ocean',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/boats-near-ocean-beach-with-huts-among-palm-trees.mp4',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3',
-    thumbnail: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?q=80&w=1000&auto=format&fit=crop',
-    icon: '⛵',
-    tier: 'free'
-  },
-  {
-    id: 'green-tea',
-    title: 'Green Tea Plantation',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/green-tea-plantations-in-munnar-kerala-india.mp4',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/04/27/audio_65b3693f93.mp3',
-    thumbnail: 'public/images/Tea-estate.jpg', // Local image for better optimization
-    icon: '🍃',
-    tier: 'free'
-  },
-  {
-    id: 'ocean-waves',
-    title: 'Ocean Waves',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/ocean_waves_1080p.mp4',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/02/07/audio_65893b04b9.mp3',
-    thumbnail: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1000&auto=format&fit=crop',
-    icon: '🌊',
-    tier: 'premier'
-  },
-  {
-    id: 'forest',
-    title: 'Enchanted Forest',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/enchanted_forest_1080p.mp4',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/07/04/audio_323281d897.mp3',
-    thumbnail: 'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1000&auto=format&fit=crop',
-    icon: '🌲',
-    tier: 'premier'
-  },
-  {
-    id: 'himalaya',
-    title: 'Himalayan Sunrise',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/himalayan_sunrise_1080p.mp4',
-    audioUrl: 'https://cdn.pixabay.com/audio/2022/09/02/audio_72502a492a.mp3',
-    thumbnail: 'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?q=80&w=1000&auto=format&fit=crop',
-    icon: '🏔️',
-    tier: 'premier'
-  },
-  {
-    id: 'calm-lake',
-    title: 'Calm Lake View',
-    videoUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/themes/wonderful-dusk-over-calm-lake.mp4',
-    audioUrl: 'https://manas360-themed-rooms.s3.ap-south-1.amazonaws.com/Sound%20Therapy%20Track/TunePocket-Relaxing-Piano-Music-With-Ocean-Sounds-1-Hour-Preview.mp3',
-    thumbnail: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000&auto=format&fit=crop',
-    icon: '🌅',
-    tier: 'plus'
-  },
-  {
-    id: 'real-room-ar',
-    title: 'YOUR REAL ROOM',
-    videoUrl: '', // Camera based
-    audioUrl: '',
-    thumbnail: '/images/AR-room.jpg', // Local image for better optimization
-    icon: '🦋',
-    tier: 'plus',
-    isRealAR: true
-  }
-];
+// Theme type definition
+interface Theme {
+  id: string;
+  title: string;
+  videoUrl: string;
+  audioUrl: string;
+  thumbnail: string;
+  icon: string;
+  tier: 'free' | 'premier' | 'plus';
+  isRealAR?: boolean;
+}
 
 export const ARThemedRoomLanding: React.FC = () => {
   const { i18n } = useTranslation();
   const [currentPlan, setCurrentPlan] = useState<'free' | 'premier' | 'plus'>('free');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successPlanName, setSuccessPlanName] = useState('');
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch themes from backend
+  useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const response = await api.themedRooms.getThemes();
+        setThemes(response.data.themes || []);
+      } catch (error) {
+        console.error('Failed to fetch themes:', error);
+        // Fallback to empty array on error
+        setThemes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, []);
 
   useEffect(() => {
     setCurrentPlan(storageService.getARPlan());
@@ -149,11 +115,11 @@ export const ARThemedRoomLanding: React.FC = () => {
     return true;
   };
 
-  const freeThemes = AR_THEMES.filter(t => t.tier === 'free');
-  const premierThemes = AR_THEMES.filter(t => t.tier === 'premier');
-  const plusThemes = AR_THEMES.filter(t => t.tier === 'plus');
+  const freeThemes = themes.filter(t => t.tier === 'free');
+  const premierThemes = themes.filter(t => t.tier === 'premier');
+  const plusThemes = themes.filter(t => t.tier === 'plus');
 
-  const renderThemeCard = (theme: typeof AR_THEMES[0]) => {
+  const renderThemeCard = (theme: Theme) => {
     const locked = isThemeLocked(theme.tier);
     const isRealRoom = theme.id === 'real-room-ar';
 
@@ -193,6 +159,17 @@ export const ARThemedRoomLanding: React.FC = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading themes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-[#1A1A1A] relative overflow-x-hidden">

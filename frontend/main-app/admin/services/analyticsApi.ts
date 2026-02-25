@@ -10,7 +10,18 @@ const API_BASE_URL =
     viteEnv.VITE_API_BASE_URL ||
     viteEnv.VITE_API_URL ||
     process.env.REACT_APP_API_URL ||
-    'http://localhost:5001/api';
+    'http://localhost:5001/api/v1';
+
+function getCookie(name: string): string | null {
+    if (typeof document === 'undefined') return null;
+    const cookie = document.cookie
+        .split(';')
+        .map(value => value.trim())
+        .find(value => value.startsWith(`${name}=`));
+
+    if (!cookie) return null;
+    return decodeURIComponent(cookie.split('=').slice(1).join('='));
+}
 
 // =========================================
 // General Types
@@ -141,13 +152,13 @@ export interface PlatformMetrics {
 
 class AnalyticsApi {
     private client: AxiosInstance;
-    private token: string | null = null;
-    private adminPrefix = '/v1/admin';
+    private adminPrefix = '/admin';
 
     constructor() {
         this.client = axios.create({
             baseURL: API_BASE_URL,
             timeout: 10000,
+            withCredentials: true,
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -155,11 +166,12 @@ class AnalyticsApi {
 
         // Add auth interceptor
         this.client.interceptors.request.use((config) => {
-            if (!this.token) {
-                this.loadToken();
-            }
-            if (this.token) {
-                config.headers.Authorization = `Bearer ${this.token}`;
+            const csrfToken = getCookie('csrf_token');
+            if (csrfToken) {
+                config.headers = {
+                    ...(config.headers || {}),
+                    'X-CSRF-Token': csrfToken
+                } as any;
             }
             return config;
         });
@@ -177,37 +189,19 @@ class AnalyticsApi {
     }
 
     setToken(token: string) {
-        this.token = token;
-        localStorage.setItem('analytics_token', token);
+        void token;
     }
 
     clearToken() {
-        this.token = null;
-        localStorage.removeItem('analytics_token');
+        return;
     }
 
     loadToken() {
-        this.token = localStorage.getItem('analytics_token');
+        return null;
     }
 
     getCurrentAdmin(): { id?: string; email?: string; name?: string; role?: string } | null {
-        const token = localStorage.getItem('analytics_token');
-        if (!token) return null;
-
-        try {
-            const payload = token.split('.')[1];
-            if (!payload) return null;
-            const decoded = JSON.parse(atob(payload));
-
-            return {
-                id: decoded.id,
-                email: decoded.email,
-                name: decoded.name,
-                role: decoded.role
-            };
-        } catch (error) {
-            return null;
-        }
+        return null;
     }
 
     // =========================================
@@ -234,21 +228,20 @@ class AnalyticsApi {
     }
 
     async getTherapists(dateRange: DateRange, limit: number = 10): Promise<TherapistMetric[]> {
-        const response: AxiosResponse<ApiResponse<TherapistMetric[]>> =
-            await this.client.get('/analytics/therapists', { params: { ...dateRange, limit } });
-        return response.data.data;
+        void dateRange;
+        void limit;
+        return [];
     }
 
     async getTrends(dateRange: DateRange, interval: 'day' | 'week' | 'month' = 'day'): Promise<{ sessions: TrendData[] }> {
-        const response: AxiosResponse<ApiResponse<{ sessions: TrendData[] }>> =
-            await this.client.get('/analytics/trends', { params: { ...dateRange, interval } });
-        return response.data.data;
+        void dateRange;
+        void interval;
+        return { sessions: [] };
     }
 
     async getDropoff(dateRange: DateRange): Promise<any> {
-        const response: AxiosResponse<ApiResponse<any>> =
-            await this.client.get('/analytics/dropoff', { params: dateRange });
-        return response.data.data;
+        void dateRange;
+        return null;
     }
 
     getExportExcelUrl(dateRange: DateRange): string {
@@ -293,21 +286,15 @@ class AnalyticsApi {
         return response.data.data;
     }
 
-    // For testing - get a demo token
-    async getTestToken(): Promise<string> {
-        const response = await this.client.get('/test-token');
-        const token = response.data.token;
-        this.setToken(token);
-        return token;
-    }
-
     // Email-only admin login
     async loginAdmin(email: string): Promise<{ token: string; user: AdminUser }> {
-        const response = await this.client.post('/admin/login', { email });
-        if (response.data.success) {
-            this.setToken(response.data.token);
+        const response = await this.client.post('/auth/admin-login', { email });
+        if (response.data?.mfaRequired) {
+            throw new Error('MFA required. Use admin MFA verification flow to complete login.');
+        }
+        if (response.data.success && response.data.user) {
             return {
-                token: response.data.token,
+                token: 'cookie-auth',
                 user: response.data.user
             };
         }

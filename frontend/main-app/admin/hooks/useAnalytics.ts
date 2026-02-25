@@ -4,7 +4,8 @@
 // ================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import analyticsApi, {
+import { api, API_BASE_URL } from '../../../utils/apiClient-unified';
+import type {
     OverviewMetrics,
     SessionMetric,
     OutcomeMetric,
@@ -63,34 +64,22 @@ export function useAnalytics(): UseAnalyticsReturn {
         setError(null);
 
         try {
-            analyticsApi.loadToken();
-
-            if (!localStorage.getItem('analytics_token')) {
-                throw new Error('Admin authentication required. Please sign in again.');
-            }
-
             const [
-                overviewData,
-                sessionsData,
-                outcomesData,
-                therapistsData,
-                trendsData,
-                dropoffData
+                overviewRes,
+                sessionsRes,
+                outcomesRes
             ] = await Promise.all([
-                analyticsApi.getOverview(dateRange),
-                analyticsApi.getSessions(dateRange),
-                analyticsApi.getOutcomes(dateRange),
-                analyticsApi.getTherapists(dateRange, 10),
-                analyticsApi.getTrends(dateRange, 'day'),
-                analyticsApi.getDropoff(dateRange)
+                api.analytics.getOverview(dateRange),
+                api.analytics.getSessions(dateRange),
+                api.analytics.getOutcomes(dateRange)
             ]);
 
-            setOverview(overviewData || null);
-            setSessions(sessionsData || null);
-            setOutcomes(outcomesData || null);
-            setTherapists(therapistsData || []);
-            setTrends(trendsData?.sessions || []);
-            setDropoff(dropoffData || null);
+            setOverview(overviewRes.data.data || null);
+            setSessions(sessionsRes.data.data || null);
+            setOutcomes(outcomesRes.data.data || null);
+            setTherapists([]);  // Therapist metrics not yet implemented in backend
+            setTrends([]);      // Trends not yet implemented in backend
+            setDropoff(null);   // Dropoff not yet implemented in backend
         } catch (err: any) {
             console.error('Analytics fetch error:', err);
             setError(err.response?.data?.error || err.message || 'Failed to load analytics');
@@ -104,15 +93,13 @@ export function useAnalytics(): UseAnalyticsReturn {
     }, [fetchAllData]);
 
     const exportExcel = () => {
-        const token = localStorage.getItem('analytics_token');
-        const url = analyticsApi.getExportExcelUrl(dateRange);
-        window.open(`${url}&token=${token}`, '_blank');
+        const url = `${API_BASE_URL}/analytics/export/excel?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        window.open(url, '_blank');
     };
 
     const exportPdf = () => {
-        const token = localStorage.getItem('analytics_token');
-        const url = analyticsApi.getExportPdfUrl(dateRange);
-        window.open(`${url}&token=${token}`, '_blank');
+        const url = `${API_BASE_URL}/analytics/export/pdf?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        window.open(url, '_blank');
     };
 
     const addTherapist = (newTherapistData: any) => {

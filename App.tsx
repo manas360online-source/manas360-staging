@@ -62,6 +62,7 @@ import CorporateWellnessApp from './frontend/apps/corporate-wellness/App';
 import MatchingApp from './frontend/apps/patient-matching/App';
 import SingleMeetingJitsi from './frontend/apps/single-meeting-jitsi/App';
 import AdminApp from './frontend/main-app/admin/App';
+import { UniversalAuthPage } from './frontend/main-app/pages/UniversalAuthPage';
 
 import { AnalyticsDashboard } from './frontend/main-app/admin/pages/AnalyticsDashboard';
 // import './frontend/main-app/admin/index.css'; // Commented out to avoid global style conflicts for now, will enable if needed
@@ -69,6 +70,7 @@ import { AnalyticsDashboard } from './frontend/main-app/admin/pages/AnalyticsDas
 
 export type ViewState =
   | 'landing'
+  | 'auth'
   | 'assessment'
   | 'results'
   | 'crisis'
@@ -123,7 +125,7 @@ export type ViewState =
   | 'digital-pet'
   | 'premium-hub'
   | 'admin-login'
-  | 'admin-dashboard'
+  | 'admin-dashboard';
 
 
 type AssessmentData = Record<string, unknown> | null;
@@ -131,6 +133,7 @@ type UserData = { firstName?: string } & Record<string, unknown>;
 type HistoryRecord = { sessionTitle?: string; sessionId?: string; answers?: unknown } & Record<string, unknown>;
 
 const VIEW_MAP: Record<string, ViewState> = {
+  auth: 'auth',
   assessment: 'assessment',
   results: 'results',
   crisis: 'crisis',
@@ -479,7 +482,7 @@ const App: React.FC = () => {
             <Header
               onLoginClick={(role) => {
                 setLoginRole(role || null);
-                setShowLandingLogin(true);
+                navigate('auth');
               }}
             />
             <div className="landing-content relative z-20 w-full max-w-[1400px] mx-auto px-4 py-4 pb-32 md:pb-48">
@@ -495,6 +498,26 @@ const App: React.FC = () => {
           </main>
           <CrisisBanner />
         </>
+      )}
+
+      {currentView === 'auth' && (
+        <UniversalAuthPage 
+          onSuccess={(role, user) => {
+            // Set user data and navigate by role
+            const roleRoutes: Record<string, string> = {
+              patient: 'profile-setup',
+              therapist: 'therapist-onboarding',
+              corporate: 'corporate-wellness',
+              education: 'school-wellness',
+              healthcare: 'home',
+              insurance: 'home',
+              government: 'home'
+            };
+            handleUpdateUser(user);
+            navigate(roleRoutes[role] || 'home');
+          }}
+          onAdminLoginClick={() => navigate('admin/login')}
+        />
       )}
 
       {currentView === 'assessment' && <Assessment onSubmit={handleAssessmentSubmit} />}

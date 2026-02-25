@@ -1,0 +1,2 @@
+health=200
+legacy_admin=500

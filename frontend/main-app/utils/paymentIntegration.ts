@@ -2,14 +2,14 @@
  * MANAS360 Payment Integration
  * Wrapper to integrate payment gateway functionality into main app
  * 
- * This provides a direct connection to the payment gateway system
- * without duplicating code.
+ * Uses unified API client for all backend communication.
  * 
  * Usage:
  * import { initiatePayment } from '@/utils/paymentIntegration';
  * await initiatePayment({ planId: 'premium_monthly', source: 'patient_plans' });
  */
 
+import { api } from '../../utils/apiClient-unified';
 import { BACKEND_PLAN_IDS, PAYMENT_SOURCES } from '../config/PRICING_CONFIG';
 
 export interface PaymentConfig {
@@ -44,30 +44,9 @@ export async function initiatePayment(config: PaymentConfig): Promise<void> {
   } = config;
 
   try {
-    // Get user auth (you may need to add proper auth implementation)
-    const userId = localStorage.getItem('userId') || 'demo-user';
-    const authToken = localStorage.getItem('authToken');
-
-    // Call backend to initiate payment
-    const response = await fetch('/api/payments/initiate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
-      },
-      body: JSON.stringify({
-        userId,
-        planId,
-        source,
-        metadata,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Payment initiation failed');
-    }
+    // Call backend using unified API client
+    const response = await api.payments.create(planId);
+    const data = response.data;
 
     // If backend returns redirect URL (for PhonePe), redirect to it
     if (data.redirectUrl) {
@@ -141,18 +120,13 @@ export async function checkSubscriptionStatus(): Promise<{
   expiresAt?: string;
 }> {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      return { hasSubscription: false };
-    }
-
-    const response = await fetch(`/api/subscriptions/status?userId=${userId}`);
-    const data = await response.json();
+    const response = await api.subscriptions.getCurrent();
+    const subscription = response.data.subscription;
 
     return {
-      hasSubscription: data.hasSubscription || false,
-      planId: data.planId,
-      expiresAt: data.expiresAt,
+      hasSubscription: Boolean(subscription && subscription.status === 'active'),
+      planId: subscription?.plan_id || subscription?.planId,
+      expiresAt: subscription?.ends_at || subscription?.endDate,
     };
   } catch (error) {
     console.error('Error checking subscription status:', error);

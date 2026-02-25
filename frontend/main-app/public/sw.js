@@ -66,17 +66,13 @@ const STATIC_ASSETS = [
 
 const API_CACHE_ROUTES = [
 
-  '/api/user/profile',
+  '/api/v1/users/me',
 
-  '/api/mood/history',
+  '/api/v1/subscriptions/current',
 
-  '/api/journal/entries',
+  '/api/v1/subscriptions/plans',
 
-  '/api/assessments/history',
-
-  '/api/therapist/list',
-
-  '/api/meditation/tracks',
+  '/api/v1/themed-rooms/themes',
 
 ];
 
@@ -84,9 +80,9 @@ const API_CACHE_ROUTES = [
 
 const NETWORK_ONLY_ROUTES = [
 
-  '/api/auth/',
+  '/api/v1/auth/',
 
-  '/api/payment/',
+  '/api/v1/payments/',
 
   '/api/session/video',
 
@@ -496,127 +492,19 @@ self.addEventListener('sync', (event) => {
 
 async function syncMoodEntries() {
 
-  const db = await openIndexedDB();
-
-  const entries = await db.getAll('pending_mood_entries');
-
-  
-
-  for (const entry of entries) {
-
-    try {
-
-      const response = await fetch('/api/mood/entries', {
-
-        method: 'POST',
-
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify(entry.data)
-
-      });
-
-      
-
-      if (response.ok) {
-
-        await db.delete('pending_mood_entries', entry.id);
-
-        console.log('[SW] Synced mood entry:', entry.id);
-
-      }
-
-    } catch (error) {
-
-      console.error('[SW] Failed to sync mood entry:', entry.id, error);
-
-    }
-
-  }
+  console.warn('[SW] sync-mood-entries disabled: legacy endpoint removed during /api/v1 contract lock');
 
 }
 
 async function syncJournalEntries() {
 
-  const db = await openIndexedDB();
-
-  const entries = await db.getAll('pending_journal_entries');
-
-  
-
-  for (const entry of entries) {
-
-    try {
-
-      const response = await fetch('/api/journal/entries', {
-
-        method: 'POST',
-
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify(entry.data)
-
-      });
-
-      
-
-      if (response.ok) {
-
-        await db.delete('pending_journal_entries', entry.id);
-
-        console.log('[SW] Synced journal entry:', entry.id);
-
-      }
-
-    } catch (error) {
-
-      console.error('[SW] Failed to sync journal entry:', entry.id, error);
-
-    }
-
-  }
+  console.warn('[SW] sync-journal-entries disabled: legacy endpoint removed during /api/v1 contract lock');
 
 }
 
 async function syncAssessments() {
 
-  const db = await openIndexedDB();
-
-  const assessments = await db.getAll('pending_assessments');
-
-  
-
-  for (const assessment of assessments) {
-
-    try {
-
-      const response = await fetch('/api/assessments', {
-
-        method: 'POST',
-
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify(assessment.data)
-
-      });
-
-      
-
-      if (response.ok) {
-
-        await db.delete('pending_assessments', assessment.id);
-
-        console.log('[SW] Synced assessment:', assessment.id);
-
-      }
-
-    } catch (error) {
-
-      console.error('[SW] Failed to sync assessment:', assessment.id, error);
-
-    }
-
-  }
+  console.warn('[SW] sync-assessments disabled: legacy endpoint removed during /api/v1 contract lock');
 
 }
 

@@ -23,7 +23,8 @@
     "test:4-integration": "jest tests/integration.test.cjs",
     "test:5-services": "jest tests/services.test.cjs",
     "test:6-comprehensive": "jest tests/comprehensive-integration.test.cjs",
-    "test:all": "jest tests/ --verbose"
+    "test:all": "jest tests/ --verbose",
+    "test:security-smoke": "node scripts/security-smoke.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.41.0",
@@ -32,6 +33,8 @@
     "canvas-confetti": "^1.9.4",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "html2canvas": "1.4.1",
     "i18next": "23.7.6",
     "i18next-browser-languagedetector": "7.2.0",

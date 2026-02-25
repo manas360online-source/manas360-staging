@@ -4,6 +4,8 @@ import App from './App';
 import './utils/i18n';
 import './src/styles/accessibility.css';
 import { initializeTheme } from './utils/themeUtils';
+import { AuthProvider } from './contexts/AuthContext';
+import { SubscriptionProvider } from './contexts/SubscriptionContext';
 
 // Initialize theme BEFORE rendering React
 // This prevents flash of wrong theme
@@ -20,7 +22,11 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <AuthProvider>
+        <SubscriptionProvider>
+          <App />
+        </SubscriptionProvider>
+      </AuthProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

@@ -37,8 +37,8 @@ import { ARThemePlayer } from './components/ARThemePlayer';
 import { ARRealRoomPlayer } from './components/ARRealRoomplayer';
 import { FreeToolsPage } from './components/FreeToolsPage';
 import { QuickLaunchDock } from './components/QuickLaunchDock';
-import { LoginModal } from './components/LoginModal';
 import { DigitalPetHub } from './components/DigitalPetHub';
+import { UniversalAuthPage } from './pages/UniversalAuthPage';
 
 import { ProfileSetup } from './components/ProfileSetup';
 import { WellnessSubscription } from './components/WellnessSubscription';
@@ -63,11 +63,14 @@ import SingleMeetingJitsi from '../apps/single-meeting-jitsi/App';
 
 import { AnalyticsDashboard } from './admin/pages/AnalyticsDashboard';
 import { AdminLogin } from './admin/pages/AdminLogin';
+import { ProtectedRoute } from './components/guards/ProtectedRoute';
+import { RequireFeature } from './components/guards/RequireFeature';
 // import './admin/index.css'; // Keep disabled to avoid global style conflicts
 
 
 export type ViewState =
   | 'landing'
+  | 'auth'
   | 'assessment'
   | 'results'
   | 'crisis'
@@ -129,6 +132,8 @@ type UserData = { firstName?: string } & Record<string, unknown>;
 type HistoryRecord = { sessionTitle?: string; sessionId?: string; answers?: unknown } & Record<string, unknown>;
 
 const VIEW_MAP: Record<string, ViewState> = {
+  auth: 'auth',
+  login: 'auth',
   assessment: 'assessment',
   results: 'results',
   crisis: 'crisis',
@@ -213,10 +218,6 @@ const App: React.FC = () => {
   const [editingSession, setEditingSession] = useState<Session | undefined>(undefined);
   const [activeSession, setActiveSession] = useState<Session | undefined>(undefined);
   const [viewingHistoryRecord, setViewingHistoryRecord] = useState<HistoryRecord | null>(null);
-
-  // Landing Page Login State
-  const [showLandingLogin, setShowLandingLogin] = useState(false);
-  const [loginRole, setLoginRole] = useState<string | null>(null);
 
   // Helper to get base path with current language
   const getPath = useCallback((view: string) => `#/${i18n.language}/${view}`, [i18n.language]);
@@ -337,9 +338,8 @@ const App: React.FC = () => {
   }, [getPath]);
 
   const handleStartAssessment = useCallback(() => {
-    // Open Login Modal to start the journey instead of going directly to assessment
-    setShowLandingLogin(true);
-  }, []);
+    navigate('auth');
+  }, [navigate]);
 
   const handleAssessmentSubmit = useCallback((data: AssessmentData, isCritical: boolean) => {
     setAssessmentData(data);
@@ -456,7 +456,6 @@ const App: React.FC = () => {
       {currentView === 'landing' && (
         <>
           <QuickLaunchDock />
-          <LoginModal isOpen={showLandingLogin} onClose={() => setShowLandingLogin(false)} role={loginRole} />
 
           <div
             className="landing relative w-full transition-colors duration-500 overflow-hidden"
@@ -474,10 +473,7 @@ const App: React.FC = () => {
             <BackgroundParticles />
 
             <Header
-              onLoginClick={(role) => {
-                setLoginRole(role || null);
-                setShowLandingLogin(true);
-              }}
+              onLoginClick={() => navigate('auth')}
             />
             <div className="landing-content relative z-20 w-full max-w-[1400px] mx-auto px-4 py-4 pb-32 md:pb-48">
               <Hero onStartClick={handleStartAssessment} />
@@ -492,6 +488,25 @@ const App: React.FC = () => {
           </main>
           <CrisisBanner />
         </>
+      )}
+
+      {currentView === 'auth' && (
+        <UniversalAuthPage
+          onSuccess={(role, user) => {
+            const roleRoutes: Record<string, string> = {
+              patient: 'profile-setup',
+              therapist: 'therapist-onboarding',
+              corporate: 'corporate-wellness',
+              education: 'school-wellness',
+              healthcare: 'home',
+              insurance: 'home',
+              government: 'home'
+            };
+            handleUpdateUser(user);
+            navigate(roleRoutes[role] || 'home');
+          }}
+          onAdminLoginClick={() => navigate('admin/login')}
+        />
       )}
 
       {currentView === 'assessment' && <Assessment onSubmit={handleAssessmentSubmit} />}
@@ -547,7 +562,11 @@ const App: React.FC = () => {
       {currentView === 'digital-pet' && <DigitalPetHub onBack={() => navigate('home')} />}
       {currentView === 'admin-login' && <AdminLogin onNavigate={navigate} onLoginSuccess={() => navigate('admin-dashboard')} />}
 
-      {currentView === 'admin-dashboard' && <AnalyticsDashboard />}
+      {currentView === 'admin-dashboard' && (
+        <ProtectedRoute allowedRoles={['admin']}>
+          <AnalyticsDashboard />
+        </ProtectedRoute>
+      )}
 
     </div>
   );

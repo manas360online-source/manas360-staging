@@ -520,7 +520,6 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
   const { i18n } = useTranslation();
   const [activeLane, setActiveLane] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [ribbonVisible, setRibbonVisible] = useState(true);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -651,12 +650,11 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
               {/* Login */}
               <div style={{ position: "relative" }}>
                 <div
-                  onClick={() => setLoginOpen(!loginOpen)}
+                  onClick={() => onLoginClick?.()}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 cursor-pointer text-xs font-bold text-[#1A2332] dark:text-white hover:border-[#0C7C8A] transition-colors bg-white dark:bg-slate-800"
                 >
-                  Create | Login <span style={{ fontSize: 10 }}>▾</span>
+                  Create | Login
                 </div>
-                <LoginDropdown isOpen={loginOpen} onClose={() => setLoginOpen(false)} onLoginClick={onLoginClick || (() => { })} />
               </div>
 
               <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>

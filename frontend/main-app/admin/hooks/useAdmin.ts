@@ -4,7 +4,10 @@
 // ================================================
 
 import { useState, useEffect, useCallback } from 'react';
-import analyticsApi, { AdminUser, SubscriptionDetails, PlatformMetrics } from '../services/analyticsApi';
+import { api } from '../../../utils/apiClient-unified';
+
+// Import types from analyticsApi for compatibility (will migrate types later)
+import type { AdminUser, SubscriptionDetails, PlatformMetrics } from '../services/analyticsApi';
 
 export const useAdmin = () => {
     const [users, setUsers] = useState<AdminUser[]>([]);
@@ -16,8 +19,8 @@ export const useAdmin = () => {
     const fetchUsers = useCallback(async (filters = {}) => {
         setLoading(true);
         try {
-            const data = await analyticsApi.getAdminUsers(filters);
-            setUsers(data);
+            const response = await api.admin.getUsers(filters);
+            setUsers(response.data.data);
             setError(null);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch users');
@@ -29,8 +32,8 @@ export const useAdmin = () => {
     const fetchSubscriptions = useCallback(async (filters = {}) => {
         setLoading(true);
         try {
-            const data = await analyticsApi.getAdminSubscriptions(filters);
-            setSubscriptions(data);
+            const response = await api.admin.getSubscriptions(filters);
+            setSubscriptions(response.data.data);
             setError(null);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch subscriptions');
@@ -42,8 +45,8 @@ export const useAdmin = () => {
     const fetchPlatformMetrics = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await analyticsApi.getPlatformMetrics();
-            setMetrics(data);
+            const response = await api.admin.getMetrics();
+            setMetrics(response.data.data);
             setError(null);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch platform metrics');
@@ -54,7 +57,7 @@ export const useAdmin = () => {
 
     const verifyTherapist = async (id: string) => {
         try {
-            await analyticsApi.verifyTherapist(id);
+            await api.admin.verifyTherapist(id);
             // Refresh users list after verification
             fetchUsers();
             return true;
