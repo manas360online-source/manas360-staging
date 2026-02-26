@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // ─── DESIGN SYSTEM ───
 const C = {
@@ -215,7 +216,7 @@ function MegaMenu({ lane, onClose, onItemClick }: { lane: any, onClose: () => vo
 function SmartSearch({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { i18n } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen && inputRef.current) inputRef.current.focus();
@@ -235,7 +236,16 @@ function SmartSearch({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
     : [];
 
   const handleNavigate = (view: string) => {
-    window.location.hash = `#/${i18n.language}/${view}`;
+    if (!view) {
+      onClose();
+      return;
+    }
+    if (typeof view === 'string' && view.startsWith('tel:')) {
+      window.location.href = view;
+      onClose();
+      return;
+    }
+    navigate(`/${String(view).replace(/^\/+/, '')}`);
     onClose();
   }
 
@@ -438,6 +448,7 @@ function LoginDropdown({ isOpen, onClose, onLoginClick }: { isOpen: boolean, onC
 
 // --- SUBSCRIPTION RIBBON ---
 function SubRibbon({ isVisible, onClose }: { isVisible: boolean, onClose: () => void }) {
+  const navigate = useNavigate();
   if (!isVisible) return null;
   return (
     <div
@@ -457,7 +468,7 @@ function SubRibbon({ isVisible, onClose }: { isVisible: boolean, onClose: () => 
         🎁 <strong>Free for World Mental Health Day</strong> — Premium access for 30 days, no card needed
       </span>
       <span
-        onClick={() => window.location.hash = '#/subscribe'}
+        onClick={() => navigate('/subscribe')}
         style={{
           fontSize: 11,
           fontWeight: 700,
@@ -518,6 +529,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeLane, setActiveLane] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [ribbonVisible, setRibbonVisible] = useState(true);
@@ -543,17 +556,19 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
       window.location.href = item.href;
       return;
     }
-    window.location.hash = `#/${i18n.language}/${item.href}`;
-  }, [i18n.language]);
+    navigate(`/${String(item.href).replace(/^\/+/, '')}`);
+  }, [navigate]);
 
   const changeLanguage = (code: string) => {
-    const currentHash = window.location.hash;
-    const match = currentHash.match(/^#\/([a-z]{2})\/(.*)$/);
-    if (match) {
-      window.location.hash = `#/${code}/${match[2]}`;
-    } else {
-      window.location.hash = `#/${code}/landing`;
-    }
+    i18n.changeLanguage(code);
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true }
+    );
   };
 
   const parseHtml = (html: string) => <span dangerouslySetInnerHTML={{ __html: html }} />;
@@ -601,7 +616,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
             {/* Brand & Langs */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span className="cursor-pointer" onClick={() => window.location.hash = `#/${i18n.language}/landing`} style={{ fontSize: 24, fontWeight: 800, color: C.oceanDeep, fontFamily: "'DM Sans', sans-serif", letterSpacing: -0.5 }}>
+              <span className="cursor-pointer" onClick={() => navigate('/')} style={{ fontSize: 24, fontWeight: 800, color: C.oceanDeep, fontFamily: "'DM Sans', sans-serif", letterSpacing: -0.5 }}>
                 <span className="text-[#064E5C] dark:text-white">MANAS</span><span style={{ color: C.gold }}>360</span>
               </span>
               <div className="hidden md:flex gap-2 ml-4">
@@ -632,7 +647,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
 
               {/* Subscribe */}
               <div
-                onClick={() => window.location.hash = `#/${i18n.language}/subscribe`}
+                onClick={() => navigate('/subscribe')}
                 style={{
                   background: `linear-gradient(135deg, ${C.ocean}, ${C.oceanDeep})`,
                   padding: "7px 16px",
@@ -768,7 +783,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick }) => {
                           <span className="w-1.5 h-1.5 rounded-full bg-[#5CE0D2] gentle-pulse"></span>
                           <button
                             className="text-[9px] font-bold text-[#1A2332] bg-[#D4A017] px-3 py-0.5 rounded-[12px] hover:bg-[#E8B82A] hover:scale-105 transition-all tracking-wide"
-                            onClick={() => window.location.hash = `#/${i18n.language}/subscribe/therapists`}
+                            onClick={() => navigate('/subscribe/therapists')}
                           >
                             JOIN NOW
                           </button>

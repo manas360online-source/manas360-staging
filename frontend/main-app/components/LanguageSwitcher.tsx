@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -12,17 +13,19 @@ const LANGUAGES = [
 
 export const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const changeLanguage = (langCode: string) => {
-    const currentHash = window.location.hash;
-    const match = currentHash.match(/^#\/([a-z]{2})\/(.*)$/);
-
-    if (match) {
-      const currentView = match[2];
-      window.location.hash = `#/${langCode}/${currentView}`;
-    } else {
-      window.location.hash = `#/${langCode}/landing`;
-    }
+    i18n.changeLanguage(langCode);
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true }
+    );
   };
 
   const getPillClass = (code: string) => {

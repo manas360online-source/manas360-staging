@@ -45,6 +45,12 @@ const apiClient = axios.create({
 
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: () => void; reject: (error: unknown) => void }> = [];
+let hasForcedAuthRedirect = false;
+
+function clearClientAuthHints() {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'csrf_token=; Max-Age=0; path=/';
+}
 
 function processQueue(error: unknown) {
   failedQueue.forEach((pending) => {
@@ -67,10 +73,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config || {};
     const hasCsrfCookie = typeof document !== 'undefined' && document.cookie.includes('csrf_token=');
+    const isAuthPage = typeof window !== 'undefined' && window.location.pathname === '/auth';
     const requestUrl = String(originalRequest.url || '');
     const isRefreshRequest = requestUrl.includes('/auth/refresh');
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest && hasCsrfCookie) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest && hasCsrfCookie && !isAuthPage) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({
@@ -85,11 +92,18 @@ apiClient.interceptors.response.use(
 
       try {
         await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        hasForcedAuthRedirect = false;
         processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        window.location.assign('/auth');
+        clearClientAuthHints();
+        if (typeof window !== 'undefined' && !hasForcedAuthRedirect) {
+          hasForcedAuthRedirect = true;
+          if (window.location.pathname !== '/auth') {
+            window.location.replace('/auth');
+          }
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
