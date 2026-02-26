@@ -2,7 +2,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --no-audit --no-fund
 
 FROM node:20-alpine AS runtime
 WORKDIR /app
@@ -12,7 +12,6 @@ ENV PORT=5001
 COPY --from=deps /app/node_modules ./node_modules
 COPY server.js ./
 COPY backend ./backend
-COPY .env.example ./.env.example
 
 RUN addgroup -S nodejs && adduser -S nodeuser -G nodejs \
   && chown -R nodeuser:nodejs /app

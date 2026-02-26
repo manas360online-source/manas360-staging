@@ -1,0 +1,29 @@
+.git
+.github
+.vscode
+.vite
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist
+**/dist
+coverage
+**/coverage
+
+.DS_Store
+*.swp
+*.swo
+
+PROJECT_STRUCTURE_FULL.txt
+runtime_matrix_latest.txt
+
+# Runtime/deployment artifacts
+*.pem
+*.key
+*.crt
+
+# Keep deployment definitions and app sources
