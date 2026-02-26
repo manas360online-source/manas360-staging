@@ -4,7 +4,6 @@ import path from 'path';
 const root = process.cwd();
 const appFileCandidates = [
   path.join(root, 'frontend', 'main-app', 'App.tsx'),
-  path.join(root, 'App.tsx'),
 ];
 const outFile = path.join(root, 'docs', 'DEEPSCAN_MERGE_REPORT.md');
 

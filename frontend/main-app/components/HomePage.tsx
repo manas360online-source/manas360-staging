@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { storageService } from '../utils/storageService';
 import { useTranslation } from 'react-i18next';
-import { QuickLaunchDock } from './QuickLaunchDock';
 import { Header } from './Header';
 
 // --- ICONS ---
@@ -38,31 +37,6 @@ const FacebookLogo = () => (
   </svg>
 );
 
-interface SolutionCardProps {
-  title: string;
-  subtitle?: string;
-  icon: string;
-  delay: string;
-  onClick?: () => void;
-}
-
-const SolutionCard: React.FC<SolutionCardProps> = ({ title, subtitle, icon, delay, onClick }) => (
-  <div
-    onClick={onClick}
-    className={`reveal-on-scroll group bg-white dark:bg-[#111827] p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] dark:shadow-none hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:-translate-y-2 transition-all duration-300 ${onClick ? 'cursor-pointer' : ''}`}
-    style={{ transitionDelay: delay }}
-  >
-    <div className="w-16 h-16 bg-blue-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
-      {icon}
-    </div>
-    <h3 className="text-xl font-bold text-[#0A3A78] dark:text-white mb-3">{title}</h3>
-    {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{subtitle}</p>}
-    <div className="mt-6 flex items-center text-[#1FA2DE] dark:text-sky-400 font-bold text-sm group-hover:gap-2 transition-all">
-      Learn more <span>→</span>
-    </div>
-  </div>
-);
-
 export const HomePage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -83,9 +57,6 @@ export const HomePage: React.FC = () => {
   const [selectedEmoji, setSelectedEmoji] = useState<number | null>(null);
   const [checkInNote, setCheckInNote] = useState('');
   const [hasCheckedToday, setHasCheckedToday] = useState(false);
-
-  // Streak Risk State
-  const [isStreakAtRisk, setIsStreakAtRisk] = useState(false);
 
   useEffect(() => {
     setHasCheckedToday(storageService.hasCheckedInToday());
@@ -109,17 +80,6 @@ export const HomePage: React.FC = () => {
       observer.disconnect();
     };
   }, []);
-
-  // Timer logic for streak risk calculation
-  useEffect(() => {
-    const updateRiskState = () => {
-      const hours = new Date().getHours();
-      setIsStreakAtRisk(!hasCheckedToday && hours >= 18);
-    };
-    updateRiskState();
-    const interval = setInterval(updateRiskState, 30000); // Check every 30s
-    return () => clearInterval(interval);
-  }, [hasCheckedToday]);
 
   // Countdown timer for OTP
   useEffect(() => {
@@ -230,33 +190,6 @@ export const HomePage: React.FC = () => {
     }, 1000);
   };
 
-  const navigateToSubscribe = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    window.location.hash = `#/${i18n.language}/subscribe`;
-  };
-
-  const navigateToSoundTherapy = () => {
-    window.location.hash = `#/${i18n.language}/sound-therapy`;
-  };
-
-  const navigateToARThemedRoom = () => {
-    window.location.hash = `#/${i18n.language}/ar-themed-room`;
-  };
-
-  const handleOpenCheckIn = () => {
-    const alreadyDone = storageService.hasCheckedInToday();
-    if (alreadyDone) {
-      window.location.hash = `#/${i18n.language}/streaks`;
-      return;
-    } else {
-      setCheckInState('form');
-    }
-    setIsCheckInOpen(true);
-  };
-
   const handleCompleteCheckIn = () => {
     storageService.saveCheckIn({ feeling: selectedEmoji?.toString(), note: checkInNote });
     setHasCheckedToday(true);
@@ -272,26 +205,10 @@ export const HomePage: React.FC = () => {
     }, 300);
   };
 
-  // --- Styled Blue Button Class ---
-  const gradientBtnClass = "px-6 md:px-8 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-[#0052CC] to-[#2684FF] text-white font-bold shadow-[0_4px_14px_0_rgba(0,118,255,0.39)] hover:shadow-[0_8px_25px_rgba(0,118,255,0.35)] hover:-translate-y-0.5 hover:brightness-105 transition-all duration-300 ease-out tracking-wide text-[0.85rem] md:text-[0.95rem] flex items-center justify-center active:scale-95";
-
   const emojis = ['🤩', '😐', '😟', '😌', '😩'];
 
   return (
     <div className="font-sans text-[#1A1A1A] bg-[#FDFCF8] selection:bg-blue-100 selection:text-[#0A3A78] overflow-x-hidden transition-colors duration-500 dark:bg-[#030712] dark:text-slate-100">
-
-      {/* QUICK LAUNCH DOCK INTEGRATION */}
-      <QuickLaunchDock />
-
-      {/* STREAK RISK BANNER */}
-      {isStreakAtRisk && (
-        <div className="relative w-full z-[50] bg-red-600 text-white py-4 px-6 flex items-center justify-center gap-3 animate-fade-in-down shadow-xl">
-          <span className="text-xl">🔥</span>
-          <span className="font-bold tracking-wide text-sm md:text-base text-center">
-            {t('home_streak_risk')}
-          </span>
-        </div>
-      )}
 
       {/* LOGIN MODAL */}
       {isLoginOpen && (
@@ -585,16 +502,25 @@ export const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* HERO & NAV - HEADER REPLACEMENT */}
+      {/* HERO */}
       <div
-        className="relative w-full min-h-[105vh] md:min-h-[95vh] flex flex-col transition-all duration-700 z-[100]"
+        className="relative w-full min-h-[100vh] md:min-h-[92vh] flex flex-col transition-all duration-700 z-[100]"
         style={{
           backgroundImage: 'url("https://images.unsplash.com/photo-1468581264429-2548ef9eb732?q=80&w=2560&auto=format&fit=crop")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#E0F2FE]/40 via-transparent to-[#FDFCF8] dark:from-[#030712]/80 dark:to-[#030712] pointer-events-none z-0"></div>
+        <div className="absolute inset-0 bg-[#031428]/35 dark:bg-[#020617]/65 pointer-events-none z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#DBEEF9]/55 via-[#DBEEF9]/20 to-[#FDFCF8] dark:from-[#030712]/85 dark:via-[#030712]/65 dark:to-[#030712] pointer-events-none z-0"></div>
+        <div className="landing-water-waves z-[6]" aria-hidden="true">
+          <svg className="wave-svg back" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path className="wave-path" d="M0,72 C180,36 320,96 510,72 C700,48 860,12 1040,38 C1210,62 1320,94 1440,72 L1440,120 L0,120 Z" />
+          </svg>
+          <svg className="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path className="wave-path" d="M0,58 C150,84 290,22 470,50 C650,78 790,106 980,78 C1160,52 1290,24 1440,56 L1440,120 L0,120 Z" />
+          </svg>
+        </div>
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#FDFCF8] via-[#FDFCF8]/90 to-transparent dark:from-[#030712] dark:via-[#030712]/90 pointer-events-none z-0"></div>
 
         {/* USE SHARED HEADER COMPONENT EXACTLY AS IN LANDING PAGE */}
@@ -605,202 +531,128 @@ export const HomePage: React.FC = () => {
           }} />
         </div>
 
-        <div className="relative z-20 flex-1 flex flex-col justify-center items-center text-center px-4 max-w-5xl mx-auto mt-16 md:mt-32 pb-48 md:pb-64">
+        <div className="relative z-20 flex-1 flex flex-col justify-center items-center text-center px-4 max-w-4xl mx-auto mt-20 md:mt-28 pb-28 md:pb-40">
 
-          <div className="hero-box relative z-10 p-8 rounded-[3rem]">
-            <h1 className="font-serif text-[clamp(2.5rem,5.5vw,5rem)] font-normal text-[#0A3A78] dark:text-white leading-[1.2] mb-8 drop-shadow-lg tracking-tight">
-              {t('home_hero_title')}
-            </h1>
-            <p className="text-[1.15rem] md:text-[1.4rem] text-[#2E3A48] dark:text-slate-300 leading-[1.65] max-w-4xl mx-auto mb-14 font-medium opacity-90 drop-shadow-sm">
-              {t('home_hero_subtitle')}
-            </p>
-            <button type="button" onClick={() => window.location.hash = `#/${i18n.language}/onboarding/name`} className="px-16 py-6 text-[1.3rem] rounded-full bg-gradient-to-r from-[#0052CC] to-[#2684FF] text-white font-bold shadow-[0_10px_30px_rgba(30,89,255,0.4)] hover:shadow-xl hover:-translate-y-1 hover:brightness-105 transition-all uppercase tracking-wider"> {t('start_checkin')} </button>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700 px-4 py-2 text-xs md:text-sm font-semibold text-[#0A3A78] dark:text-sky-300 mb-6">
+            <span>🆘</span>
+            <span>If you’re in immediate danger, call local emergency services now.</span>
           </div>
 
-          {/* FLOATING SHIP - REDESIGNED TO MATCH USER'S MOTORBOAT IMAGE */}
-          <div
-            onClick={handleOpenCheckIn}
-            className="absolute bottom-28 right-0 md:bottom-56 md:-right-12 lg:-right-16 z-[100] cursor-pointer group"
-          >
-            {/* Subtle Floating Animation */}
-            <div className="animate-float flex flex-col items-center">
-              <div className="relative w-[180px] md:w-[195px] transition-transform duration-500 group-hover:scale-105 drop-shadow-2xl">
+          <div className="hero-box relative z-10 p-5 md:p-8 rounded-[2rem] md:rounded-[3rem]">
+            <h1 className="font-serif text-[clamp(2.1rem,5.6vw,4.3rem)] font-semibold text-[#0A3A78] dark:text-white leading-[1.15] mb-6 tracking-tight">
+              Feel better, starting in the next 2 minutes.
+            </h1>
+            <p className="text-[1rem] md:text-[1.25rem] text-[#1F3348] dark:text-slate-300 leading-[1.65] max-w-3xl mx-auto mb-9 font-medium opacity-95">
+              MANAS360 gives you a guided mental wellness check-in and a personalized next step—private, supportive, and backed by professionals.
+            </p>
 
-                {/* 1. Flag Section (Topmost) */}
-                <div className="absolute -top-12 md:-top-12 left-1/2 -translate-x-1/2 z-0">
-                  <div className="w-1 md:w-1 h-12 md:h-12 bg-[#5D4037] rounded-full shadow-sm"></div>
-                  {/* STREAK RISK LOGIC: Color turns red after 6:00 PM if check-in is not complete */}
-                  <div className={`absolute top-1.5 left-1 w-10 md:w-12 h-6 md:h-7 rounded-sm skew-x-12 animate-pulse shadow-md transition-colors duration-500 ${isStreakAtRisk ? 'bg-[#EF4444] border-r border-red-700/20' : 'bg-[#FFC107] border-r border-yellow-600/20'}`}></div>
-                </div>
-
-                {/* 2. Top Cabin (Tier 1) */}
-                <div className="relative w-[45%] mx-auto h-10 md:h-10 bg-[#F5F5F5] dark:bg-[#172554] rounded-t-[10px] md:rounded-t-[12px] border-b-2 border-slate-200 dark:border-blue-900 flex items-center justify-around px-2 shadow-lg z-10">
-                  {/* Three rounded blue windows */}
-                  {[1, 2, 3].map((win) => (
-                    <div key={win} className="w-4 h-4 md:w-4.5 md:h-5 bg-[#2196F3] rounded-[4px] shadow-inner"></div>
-                  ))}
-                </div>
-
-                {/* 3. Middle Tier (White Body with "Check Today's" text) */}
-                <div className="relative w-[75%] mx-auto bg-white dark:bg-[#172554] h-12 md:h-12 flex items-center justify-center px-4 shadow-xl border-x border-slate-100 dark:border-blue-900 z-20"
-                  style={{ borderRadius: '4px 4px 0 0' }}>
-                  <div className="flex items-center gap-1.5 md:gap-1.5">
-                    {hasCheckedToday ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 md:w-7 md:h-7 bg-emerald-500 rounded-md flex items-center justify-center shadow-sm">
-                          <span className="text-white text-xs md:text-lg">✓</span>
-                        </div>
-                        <span className="font-bold text-[#2C3E50] dark:text-white text-[0.8rem] md:text-[0.9rem] whitespace-nowrap tracking-tight">{t('home_today_checked')}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 md:gap-1.5">
-                        <span className="text-lg md:text-xl drop-shadow-sm">🔥</span>
-                        <span className="font-bold text-[#2C3E50] dark:text-white text-[0.85rem] md:text-[0.95rem] whitespace-nowrap tracking-tight font-sans">{t('home_check_todays')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 4. Bottom Hull (Blue Body with "Streak" text) */}
-                <div className="relative w-full bg-gradient-to-b from-[#1E88E5] to-[#1565C0] h-12 md:h-14 shadow-2xl flex items-center justify-center overflow-hidden z-[5] border-t-2 border-[#64B5F6]/30 force-original-gradient"
-                  style={{ borderRadius: '0 0 60% 60% / 0 0 100% 100%' }}>
-                  {!hasCheckedToday ? (
-                    <span className="text-white font-bold text-[1rem] md:text-[1.2rem] tracking-wide drop-shadow-md">
-                      {t('home_streak')}
-                    </span>
-                  ) : (
-                    <span className="text-white font-bold text-[0.8rem] md:text-[0.9rem] opacity-80 uppercase tracking-widest">
-                      {t('home_excellent')}
-                    </span>
-                  )}
-                  {/* Wake/Ripples effect at bottom */}
-                  <div className="absolute bottom-0 w-full h-4 bg-white/20 blur-md animate-pulse"></div>
-                </div>
-
-                {/* Underwater Shadow & Wake */}
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[90%] h-4 bg-[#B3E5FC]/40 blur-xl rounded-full -z-10 animate-pulse"></div>
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-full h-8 bg-blue-900/10 blur-[40px] rounded-full -z-20"></div>
-              </div>
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => window.location.hash = `#/${i18n.language}/onboarding/name`}
+                className="w-full sm:w-auto px-10 md:px-14 py-4 md:py-5 text-[1rem] md:text-[1.08rem] rounded-full bg-gradient-to-r from-[#0052CC] to-[#2684FF] text-white font-bold shadow-[0_10px_30px_rgba(30,89,255,0.36)] hover:shadow-xl hover:-translate-y-0.5 hover:brightness-105 transition-all tracking-wide"
+              >
+                Start My Check-In
+              </button>
+              <p className="text-[0.82rem] md:text-[0.92rem] font-medium text-[#3A4B5E] dark:text-slate-400">Free to begin • No credit card • Takes ~2 minutes</p>
+              <a href="#how-it-works" className="text-sm md:text-base font-semibold text-[#0A3A78] dark:text-sky-300 hover:underline underline-offset-4">
+                How it works
+              </a>
             </div>
           </div>
         </div>
       </div>
 
-      {/* SOLUTIONS GRID */}
-      <section className="py-24 px-6 relative dark:bg-[#030712] z-[50]">
-        <div className="max-w-[1280px] mx-auto relative z-10">
-          <h2 className="reveal-on-scroll font-serif text-[2.8rem] md:text-[3.2rem] text-[#0A3A78] dark:text-white mb-16 text-center tracking-tight"> {t('solutions')} </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-            <SolutionCard title={t('wellness_seekers')} icon="🧘‍♀️" delay="0ms" />
-            <SolutionCard title={t('providers')} subtitle={t('sol_sub_providers')} icon="👩‍⚕️" delay="100ms" />
-            <SolutionCard
-              title={t('corporates')}
-              subtitle={t('sol_sub_corporates')}
-              icon="🏢"
-              delay="200ms"
-              onClick={() => window.location.hash = `#/${i18n.language}/corporate-wellness`}
-            />
-            <SolutionCard
-              title={t('education')}
-              subtitle={t('sol_sub_education')}
-              icon="🎓"
-              delay="300ms"
-              onClick={() => window.location.hash = `#/${i18n.language}/school-wellness`}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* BOT & PET SECTION */}
-      <section className="py-24 px-6 bg-[#F0F9FF] dark:bg-[#0f172a] relative overflow-hidden">
-        <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 relative z-10">
-          <div className="reveal-on-scroll group bg-white dark:bg-[#111827] rounded-[40px] p-10 md:p-14 border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-500">
-            <div className="w-24 h-24 bg-blue-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center text-5xl mb-10"> 🤖 </div>
-            <h3 className="font-serif text-[2.4rem] text-[#0A3A78] dark:text-white mb-6">{t('virtual_bot')}</h3>
-            <p className="text-[#475569] dark:text-slate-400 text-[1.15rem] mb-12"> {t('virtual_bot_desc')} </p>
-            <button type="button" onClick={() => window.location.hash = `#/${i18n.language}/meera-chat`} className="px-10 py-5 rounded-full bg-white dark:bg-slate-800 text-[#1E59FF] dark:text-sky-400 font-bold border-2 border-blue-100 dark:border-slate-700 hover:bg-[#1E59FF] hover:text-white transition-all"> {t('chat_now')} </button>
-          </div>
-          <div className="reveal-on-scroll group bg-white dark:bg-[#111827] rounded-[40px] p-10 md:p-14 border border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-500">
-            <div className="w-24 h-24 bg-amber-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center text-5xl mb-10"> 🐕 </div>
-            <h3 className="font-serif text-[2.4rem] text-[#0A3A78] dark:text-white mb-6">{t('pet_therapy')}</h3>
-            <p className="text-[#475569] dark:text-slate-400 text-[1.15rem] mb-12"> {t('pet_therapy_desc')} </p>
-            <button
-              type="button"
-              onClick={() => window.location.hash = `#/${i18n.language}/digital-pet`}
-              className="px-10 py-5 rounded-full bg-white dark:bg-slate-800 text-[#D97706] dark:text-amber-400 font-bold border-2 border-amber-100 dark:border-slate-700 hover:bg-[#D97706] hover:text-white transition-all"
-            >
-              {t('meet_fluffy')}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* SOUND THERAPY - UPDATED SECTION WITH DIRECT LINK */}
-      <section className="py-24 px-6 bg-gradient-to-b from-[#F0F9FF] to-[#FDFCF8] dark:from-[#0f172a] dark:to-[#030712]">
-        <div className="max-w-[1280px] mx-auto reveal-on-scroll">
-          <div className="bg-white dark:bg-[#111827] rounded-[50px] p-12 md:p-24 flex flex-col md:flex-row items-center gap-16 border border-slate-100 dark:border-slate-800 shadow-sm">
-            <div className="flex-1">
-              <span className="inline-block px-6 py-2 rounded-full bg-blue-50 dark:bg-slate-800 text-[#0A3A78] dark:text-sky-300 text-xs font-bold uppercase mb-10 border border-blue-50 dark:border-slate-700"> {t('footer_featured')} </span>
-              <h2 className="font-serif text-[3rem] md:text-[4rem] text-[#0A3A78] dark:text-white leading-[1.1] mb-8"> {t('sound_therapy')} </h2>
-              <p className="text-[1.25rem] text-[#475569] dark:text-slate-400 leading-relaxed mb-12"> {t('sound_therapy_desc')} </p>
-
-              {/* Main Button Link for Sound Therapy */}
-              <button
-                type="button"
-                onClick={navigateToSoundTherapy}
-                className="text-[#1E59FF] dark:text-sky-400 font-bold text-xl flex items-center gap-3 hover:gap-5 transition-all"
-              >
-                {t('explore_library')} <span>→</span>
-              </button>
+      {/* TRUST STRIP */}
+      <section className="px-6 -mt-12 md:-mt-14 relative z-[120]">
+        <div className="max-w-[1120px] mx-auto rounded-[24px] bg-white/95 dark:bg-[#0F172A]/95 border border-slate-200/70 dark:border-slate-700 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.2)] px-4 md:px-8 py-5 md:py-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-3 text-center">
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-[#0A3A78] dark:text-sky-300">Backed by professionals</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">120+ therapist network</p>
             </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-[#0A3A78] dark:text-sky-300">Trusted by users</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">4.8/5 average rating</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-[#0A3A78] dark:text-sky-300">Security</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">256-bit encryption</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-[#0A3A78] dark:text-sky-300">Privacy</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">Data privacy first</p>
+            </div>
+          </div>
+          <p className="mt-4 text-center text-sm text-slate-500 dark:text-slate-400">“I felt supported from day one—simple and private.”</p>
+        </div>
+      </section>
 
-            <div className="flex-1 flex justify-center">
-              {/* Play Button Link for Sound Therapy */}
-              <div
-                onClick={navigateToSoundTherapy}
-                className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-[#1E59FF] to-[#004BCE] dark:bg-slate-800 dark:bg-none flex items-center justify-center shadow-xl hover:scale-105 transition-transform duration-500 cursor-pointer group"
-              >
-                <div className="w-0 h-0 border-t-[25px] border-t-transparent border-l-[45px] border-l-white border-b-[25px] border-b-transparent ml-4 transition-transform group-hover:scale-110"></div>
-              </div>
+      {/* FLOW CLARITY */}
+      <section id="how-it-works" className="py-20 px-6 bg-[#FDFCF8] dark:bg-[#030712] scroll-mt-20">
+        <div className="max-w-[1180px] mx-auto">
+          <h2 className="text-center font-serif text-[2rem] md:text-[2.8rem] text-[#0A3A78] dark:text-white mb-4">Your first session in 3 steps</h2>
+          <p className="text-center text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 md:mb-12">No pressure. Clear expectations. One guided path from check-in to personalized support.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-7">
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Step 1</p>
+              <h3 className="mt-2 text-xl font-bold text-[#0A3A78] dark:text-white">Quick Check-In</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">Answer a few guided questions in about 2 minutes.</p>
+              <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">No right or wrong answers.</p>
+            </div>
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Step 2</p>
+              <h3 className="mt-2 text-xl font-bold text-[#0A3A78] dark:text-white">Personalized Path</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">Get the best next step for your current needs.</p>
+              <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Role choice happens inside onboarding, not on landing.</p>
+            </div>
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Step 3</p>
+              <h3 className="mt-2 text-xl font-bold text-[#0A3A78] dark:text-white">Save & Continue</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">Create your account only when ready to save progress.</p>
+              <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Private by design.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Support Statement */}
-      <section className="py-24 px-6 text-center dark:bg-[#030712]">
-        <div className="max-w-4xl mx-auto reveal-on-scroll">
-          <h2 className="font-serif text-[2.8rem] text-[#0A3A78] dark:text-white mb-8">{t('support_statement_title')}</h2>
-          <p className="text-lg text-[#475569] dark:text-slate-400 leading-relaxed">{t('support_statement_desc')}</p>
-        </div>
-      </section>
-
-      {/* MISSING CTA SECTION FROM IMAGE */}
-      <section className="py-32 px-6 text-center relative overflow-hidden bg-white dark:bg-[#030712]">
-        <div className="max-w-4xl mx-auto relative z-10 reveal-on-scroll">
-          <h2 className="font-serif text-[3.2rem] md:text-[4.5rem] text-[#0A3A78] dark:text-white mb-6 leading-[1.1] tracking-tight transition-colors">
-            {t('final_cta_title')} {t('final_cta_better')}{t('final_cta_title_end')}
-          </h2>
-          <p className="text-xl text-slate-500 dark:text-slate-400 mb-2 transition-colors">
-            {t('join_thousands')}
-          </p>
-          <p className="text-xl font-bold text-[#1E59FF] dark:text-sky-400 mb-12 transition-colors">
-            {t('first_assessment_free')}
-          </p>
-          <div className="flex flex-col items-center gap-6">
-            <button
-              type="button"
-              onClick={() => window.location.hash = `#/${i18n.language}/onboarding/name`}
-              className="px-16 py-6 rounded-full bg-gradient-to-r from-[#0052CC] to-[#2684FF] text-white text-xl font-bold shadow-[0_15px_35px_-5px_rgba(30,89,255,0.4)] hover:shadow-[0_25px_50px_-10px_rgba(30,89,255,0.5)] hover:-translate-y-1 hover:brightness-105 transition-all duration-300 ring-4 ring-blue-500/10"
-            >
-              {t('begin_journey')}
-            </button>
-            <p className="text-sm text-slate-400 dark:text-slate-500 font-medium tracking-wide transition-colors">
-              {t('final_cta_sub')}
-            </p>
+      {/* FEATURE PRIORITY */}
+      <section className="py-20 px-6 bg-[#F0F9FF] dark:bg-[#0f172a]">
+        <div className="max-w-[1180px] mx-auto">
+          <h2 className="text-center font-serif text-[2rem] md:text-[2.6rem] text-[#0A3A78] dark:text-white mb-10">What supports you after check-in</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-[28px] p-7 md:p-8">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Primary support</p>
+              <h3 className="mt-2 font-serif text-[1.9rem] text-[#0A3A78] dark:text-white">Virtual Therapist</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">Guided, structured conversations based on your check-in results.</p>
+              <a href={`#/${i18n.language}/meera-chat`} className="inline-block mt-5 text-sm font-semibold text-[#1E59FF] dark:text-sky-300 hover:underline">Learn more</a>
+            </div>
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-[28px] p-7">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Support tool</p>
+              <h3 className="mt-2 text-2xl font-bold text-[#0A3A78] dark:text-white">Sound Therapy</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">Calming audio routines for stress, sleep, and focus.</p>
+              <a href={`#/${i18n.language}/sound-therapy`} className="inline-block mt-5 text-sm font-semibold text-[#1E59FF] dark:text-sky-300 hover:underline">Learn more</a>
+            </div>
+            <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-[28px] p-7 md:col-span-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#1E59FF]">Optional delight</p>
+              <h3 className="mt-2 text-2xl font-bold text-[#0A3A78] dark:text-white">Digital Pet</h3>
+              <p className="mt-3 text-slate-600 dark:text-slate-400">A gentle habit companion to encourage consistency over time.</p>
+              <a href={`#/${i18n.language}/digital-pet`} className="inline-block mt-5 text-sm font-semibold text-[#1E59FF] dark:text-sky-300 hover:underline">Learn more</a>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* MOBILE STICKY CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-[500] md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-700 p-3">
+        <button
+          type="button"
+          onClick={() => window.location.hash = `#/${i18n.language}/onboarding/name`}
+          className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#0052CC] to-[#2684FF] text-white font-bold tracking-wide shadow-lg"
+        >
+          Start My Check-In
+        </button>
+      </div>
 
       <footer className="bg-[#F8FAFC] dark:bg-[#0f172a] pt-24 pb-12 px-6 border-t border-slate-100 dark:border-slate-800 transition-colors">
         <div className="max-w-[1280px] mx-auto text-center">

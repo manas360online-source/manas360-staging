@@ -20,15 +20,13 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <App />
-        </SubscriptionProvider>
-      </AuthProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
+  <ErrorBoundary>
+    <AuthProvider>
+      <SubscriptionProvider>
+        <App />
+      </SubscriptionProvider>
+    </AuthProvider>
+  </ErrorBoundary>
 );
 
 if ('serviceWorker' in navigator) {

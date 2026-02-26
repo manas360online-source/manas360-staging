@@ -45,14 +45,14 @@ RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 # Expose port
-EXPOSE 5000
+EXPOSE 5001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:5000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)});"
+    CMD node -e "require('http').get('http://localhost:5001/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)});"
 
 # Use dumb-init to properly handle signals
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD ["node", "backend/src/server.js"]
+CMD ["node", "server.js"]

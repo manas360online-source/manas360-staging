@@ -1,41 +1,39 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 export const HowItWorks: React.FC = () => {
-  const { t } = useTranslation();
   return (
-    <section className="py-10 px-4 text-center relative z-10">
-      <h2 className="font-serif text-[2.5rem] md:text-[3.5rem] font-medium text-black dark:text-slate-50 mb-6 tracking-tight animate-fade-in-down transition-colors duration-300">
-        {t('hiw_title')}
+    <section id="how-it-works" className="py-10 px-4 text-center relative z-10 scroll-mt-20">
+      <h2 className="font-serif text-[2.2rem] md:text-[3rem] font-medium text-black dark:text-slate-50 mb-4 tracking-tight animate-fade-in-down transition-colors duration-300">
+        Your first step, made simple
       </h2>
-      <p className="text-[#1A1A1A] dark:text-slate-300 text-lg max-w-2xl mx-auto mb-20 leading-relaxed transition-colors duration-300">
-        {t('hiw_desc')}
+      <p className="text-[#1A1A1A] dark:text-slate-300 text-base md:text-lg max-w-3xl mx-auto mb-14 leading-relaxed transition-colors duration-300">
+        One clear path from first click to personalized support—without pressure or confusion.
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-[1200px] mx-auto">
         
         {/* Card 1 */}
         <StepCard 
-          title={t('step_1_title')}
-          description={t('step_1_desc')}
-          footer={t('step_1_footer')}
+          title="1) Quick check-in"
+          description="Share how you feel today in about 2 minutes. No right or wrong answers."
+          footer="Private and judgment-free"
           delay="0s"
         />
 
         {/* Card 2 */}
         <StepCard 
-          title={t('step_2_title')}
-          description={t('step_2_desc')}
-          footer={t('step_2_footer')}
+          title="2) Personalized path"
+          description="Get your next best step and choose your role inside onboarding only when needed."
+          footer="Role selection comes later"
           delay="0.1s"
         />
 
         {/* Card 3 */}
         <StepCard 
-          title={t('step_3_title')}
-          description={t('step_3_desc')}
-          footer={t('step_3_footer')}
+          title="3) Continue with confidence"
+          description="Create your account to save progress and continue at your own pace."
+          footer="Clear, supportive, and secure"
           delay="0.2s"
         />
 

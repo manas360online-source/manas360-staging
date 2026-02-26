@@ -89,7 +89,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        window.location.hash = '#/en/auth';
+        window.location.assign('/auth');
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

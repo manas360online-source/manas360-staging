@@ -30,13 +30,14 @@ const pool = new Pool({
 });
 
 const app = express();
+app.disable('x-powered-by');
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS
   || process.env.CORS_ALLOWED_ORIGINS
   || process.env.CORS_ORIGIN
   || process.env.FRONTEND_ORIGIN
-  || 'http://localhost:3000,http://localhost:5001,http://localhost:5173'
+  || 'http://localhost:3000'
 )
   .split(',')
   .map((origin) => origin.trim())
@@ -152,6 +153,13 @@ app.use('/api/v1/themed-rooms', themedRoomsRoutes);
 app.use('/api/v1/admin', authenticateToken, requireAdminMfa, authorizeRole(['admin']), adminRoutes);
 app.use('/api/v1/analytics', authenticateToken, authorizePermission(['view_analytics']), analyticsRoutes);
 
+app.use(/^\/api\/(?!v1\/).*/, (_req, res) => {
+  res.status(410).json({
+    success: false,
+    message: 'Legacy API namespace is retired. Use /api/v1/* routes.'
+  });
+});
+
 app.use((err, _req, res, _next) => {
   logSecurityEvent('server_error', {
     message: err?.message || 'unknown_error',
@@ -162,10 +170,11 @@ app.use((err, _req, res, _next) => {
 });
 
 const port = Number(process.env.PORT || 5001);
+let server;
 
 async function startServer() {
   const listen = () => {
-    app.listen(port, () => {
+    server = app.listen(port, () => {
       console.log(`
 ╔════════════════════════════════════════╗
 ║   MANAS360 Unified Backend              ║
@@ -196,3 +205,36 @@ async function startServer() {
 }
 
 startServer();
+
+async function gracefulShutdown(signal) {
+  console.log(`\n${signal} received. Closing MANAS360 unified server...`);
+
+  if (server) {
+    await new Promise((resolve) => {
+      server.close(() => resolve());
+    });
+  }
+
+  try {
+    await pool.end();
+  } catch (error) {
+    console.warn('Pool shutdown warning:', error?.message || error);
+  }
+
+  console.log('Shutdown complete.');
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => {
+  gracefulShutdown('SIGTERM').catch((error) => {
+    console.error('Graceful shutdown failed:', error);
+    process.exit(1);
+  });
+});
+
+process.on('SIGINT', () => {
+  gracefulShutdown('SIGINT').catch((error) => {
+    console.error('Graceful shutdown failed:', error);
+    process.exit(1);
+  });
+});

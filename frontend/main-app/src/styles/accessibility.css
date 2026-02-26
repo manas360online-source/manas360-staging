@@ -746,6 +746,108 @@ img[alt=""] {
 
 /* ============================================
 
+   13. LANDING WATER WAVE BACKGROUND
+
+   ============================================ */
+
+.landing-water-waves {
+
+  position: absolute;
+
+  left: 0;
+
+  right: 0;
+
+  bottom: 0;
+
+  height: 180px;
+
+  overflow: hidden;
+
+  pointer-events: none;
+
+}
+
+.landing-water-waves .wave-svg {
+
+  position: absolute;
+
+  left: -25%;
+
+  width: 150%;
+
+  height: 140px;
+
+  bottom: -20px;
+
+  animation: landing-wave-drift 20s linear infinite;
+
+  opacity: 0.42;
+
+}
+
+.landing-water-waves .wave-svg.back {
+
+  height: 125px;
+
+  bottom: -8px;
+
+  opacity: 0.28;
+
+  animation-duration: 28s;
+
+  animation-direction: reverse;
+
+}
+
+.landing-water-waves .wave-path {
+
+  fill: rgba(186, 230, 253, 0.6);
+
+}
+
+.landing-water-waves .wave-svg.back .wave-path {
+
+  fill: rgba(125, 211, 252, 0.4);
+
+}
+
+.dark .landing-water-waves .wave-path {
+
+  fill: rgba(14, 116, 144, 0.5);
+
+}
+
+.dark .landing-water-waves .wave-svg.back .wave-path {
+
+  fill: rgba(12, 74, 110, 0.45);
+
+}
+
+@keyframes landing-wave-drift {
+
+  0% {
+
+    transform: translateX(0);
+
+  }
+
+  50% {
+
+    transform: translateX(7%);
+
+  }
+
+  100% {
+
+    transform: translateX(14%);
+
+  }
+
+}
+
+/* ============================================
+
    12. PRINT STYLES
 
    ============================================ */

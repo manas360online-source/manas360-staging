@@ -5,11 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k \"npm run server\" \"npm run client\"",
-    "dev:unified": "concurrently -k \"npm run server\" \"npm run client\" \"npm run payment-server\"",
+    "dev:unified": "concurrently -k \"npm run server\" \"npm run client\"",
     "client": "vite",
     "server": "nodemon server.js",
-    "admin-server": "npm run server",
-    "payment-server": "cd backend/payment-gateway && PORT=5002 npm run dev",
     "aws:compose:up": "docker compose -f deploy/aws/docker-compose.aws.yml up --build",
     "scan:merge": "node scripts/deepscan-merge.mjs",
     "build": "vite build",

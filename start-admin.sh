@@ -16,23 +16,16 @@ echo "✅ Ports cleaned"
 echo ""
 
 # Step 2: Setup backend
-echo "📦 Starting Backend..."
-echo "   Location: backend/admin"
-echo "   Port: 3001"
-echo "   CORS: localhost:3000-3010"
+echo "📦 Starting Unified Backend..."
+echo "   Location: project root"
+echo "   Port: 5001"
+echo "   API: /api/v1/*"
 echo ""
 
-cd "$(dirname "$0")/backend/admin"
-
-# Check if node_modules exists
-if [ ! -d "node_modules" ]; then
-    echo "📥 Installing backend dependencies..."
-    npm install
-    echo ""
-fi
+cd "$(dirname "$0")"
 
 # Start backend in background
-npm run dev &
+npm run server &
 BACKEND_PID=$!
 echo "✅ Backend started (PID: $BACKEND_PID)"
 sleep 3
@@ -43,8 +36,6 @@ echo "📦 Starting Frontend..."
 echo "   Location: frontend/main-app (merged admin UI)"
 echo "   Port: 3000"
 echo ""
-
-cd "$(dirname "$0")"
 
 # Check if root node_modules exists
 if [ ! -d "node_modules" ]; then
@@ -64,14 +55,14 @@ echo "============================================"
 echo "✅ MANAS360 Admin Dashboard is starting!"
 echo "============================================"
 echo ""
-echo "Backend:  http://localhost:3001"
+echo "Backend:  http://localhost:5001"
 echo "Frontend: http://localhost:3000"
 echo ""
 echo "📝 Logs:"
 echo "   Backend:  Check terminal"
 echo "   Frontend: Check terminal"
 echo ""
-echo "🌐 Open your browser: http://localhost:3000/#/en/admin-dashboard"
+echo "🌐 Open your browser: http://localhost:3000/admin"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""

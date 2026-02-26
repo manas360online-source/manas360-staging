@@ -84,10 +84,6 @@ const NETWORK_ONLY_ROUTES = [
 
   '/api/v1/payments/',
 
-  '/api/session/video',
-
-  '/api/chat/realtime',
-
 ];
 
 // ============================================
@@ -218,7 +214,7 @@ self.addEventListener('fetch', (event) => {
 
   // API routes: Network-first, fallback to cache
 
-  if (url.pathname.startsWith('/api/')) {
+  if (url.pathname.startsWith('/api/v1/')) {
 
     event.respondWith(networkFirst(request));
 
@@ -334,7 +330,7 @@ async function networkFirst(request) {
 
     // Return offline data structure for API calls
 
-    if (request.url.includes('/api/')) {
+    if (request.url.includes('/api/v1/')) {
 
       return new Response(
 

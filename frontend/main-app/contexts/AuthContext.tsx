@@ -41,8 +41,8 @@ interface AuthContextValue {
   permissions: string[];
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (phone: string, otp?: string) => Promise<{ requiresOtp: boolean }>;
-  logout: () => void;
+  login: (identifier: string, otp?: string) => Promise<{ requiresOtp: boolean; user?: User | null }>;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -101,26 +101,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // --------------------------------------------------------
   // Login: Send OTP or verify OTP
   // --------------------------------------------------------
-  const login = useCallback(async (phone: string, otp?: string) => {
+  const login = useCallback(async (identifier: string, otp?: string) => {
     if (!otp) {
       // Step 1: Send OTP
-      await api.auth.sendOtp(phone);
+      await api.auth.sendOtp(identifier);
       return { requiresOtp: true };
     }
 
     // Step 2: Verify OTP and get tokens
-    const response = await api.auth.verifyOtp(phone, otp);
+    const response = await api.auth.verifyOtp(identifier, otp);
     const userData = response?.data?.user || response?.data?.data?.user || null;
     setUser(userData);
 
-    return { requiresOtp: false };
+    return { requiresOtp: false, user: userData };
   }, []);
 
   // --------------------------------------------------------
   // Logout: Clear tokens and user state
   // --------------------------------------------------------
-  const logout = useCallback(() => {
-    api.auth.logout().catch(() => null);
+  const logout = useCallback(async () => {
+    try {
+      await api.auth.logout();
+    } catch {
+      // ignore logout failures on client reset path
+    }
     setUser(null);
   }, []);
 

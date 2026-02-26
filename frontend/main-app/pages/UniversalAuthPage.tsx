@@ -25,7 +25,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../../utils/apiClient-unified';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Types
@@ -111,7 +112,9 @@ export const UniversalAuthPage: React.FC<UniversalAuthPageProps> = ({
   onSuccess,
   onAdminLoginClick
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [mode, setMode] = useState<AuthMode>('role-select');
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isRegister, setIsRegister] = useState(false);
@@ -148,7 +151,7 @@ export const UniversalAuthPage: React.FC<UniversalAuthPageProps> = ({
     setMode('loading');
 
     try {
-      await api.auth.sendOtp(email || phone);
+      await login(email || phone);
       setMode('otp');
       setOtpCountdown(60);
     } catch (err: any) {
@@ -172,26 +175,15 @@ export const UniversalAuthPage: React.FC<UniversalAuthPageProps> = ({
     setMode('loading');
 
     try {
-      // Call unified verify-otp endpoint
-      const response = await api.auth.verifyOtp(email || phone, otp);
-      const userData = response?.data?.user || response?.data?.data?.user;
+      const response = await login(email || phone, otp);
+      const userData = response?.user || null;
 
       setMode('success');
       setTimeout(() => {
         if (onSuccess) {
           onSuccess(selectedRole!, userData);
         } else {
-          // Default navigation by role
-          const roleRoutes: Record<UserRole, string> = {
-            patient: 'profile-setup',
-            therapist: 'therapist-onboarding',
-            corporate: 'corporate-wellness',
-            education: 'school-wellness',
-            healthcare: 'home',
-            insurance: 'home',
-            government: 'home'
-          };
-          window.location.hash = `#/${i18n.language}/${roleRoutes[selectedRole!]}`;
+          navigate('/dashboard', { replace: true });
         }
       }, 1500);
     } catch (err: any) {
