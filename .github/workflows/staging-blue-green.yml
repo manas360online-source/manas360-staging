@@ -1,0 +1,82 @@
+name: Staging Blue-Green Deploy
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend_tag: ${{ steps.meta.outputs.frontend_tag }}
+      backend_tag: ${{ steps.meta.outputs.backend_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tags
+        id: meta
+        run: |
+          echo "frontend_tag=ghcr.io/${{ github.repository_owner }}/manas360-frontend-staging:v${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "backend_tag=ghcr.io/${{ github.repository_owner }}/manas360-backend-staging:v${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/staging/docker/Dockerfile.frontend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.frontend_tag }}
+            ghcr.io/${{ github.repository_owner }}/manas360-frontend-staging:latest
+
+      - name: Build & Push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/staging/docker/Dockerfile.backend
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.backend_tag }}
+            ghcr.io/${{ github.repository_owner }}/manas360-backend-staging:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH deploy green and switch traffic
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /opt/manas360
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+
+            export FRONTEND_IMAGE='${{ needs.build-and-push.outputs.frontend_tag }}'
+            export BACKEND_IMAGE='${{ needs.build-and-push.outputs.backend_tag }}'
+
+            docker compose -f deploy/staging/docker-compose.staging.yml pull frontend_blue frontend_green backend_blue backend_green nginx || true
+            bash deploy/staging/scripts/deploy-green.sh "$FRONTEND_IMAGE" "$BACKEND_IMAGE"
+
+      - name: Deployment summary
+        run: |
+          echo "Frontend: ${{ needs.build-and-push.outputs.frontend_tag }}"
+          echo "Backend:  ${{ needs.build-and-push.outputs.backend_tag }}"

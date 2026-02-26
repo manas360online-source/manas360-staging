@@ -1,0 +1,6 @@
+FROM nginx:1.27-alpine
+RUN apk add --no-cache bash curl
+COPY deploy/staging/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/staging/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+COPY deploy/staging/nginx/upstreams/frontend_active.conf /etc/nginx/upstreams/frontend_active.conf
+COPY deploy/staging/nginx/upstreams/backend_active.conf /etc/nginx/upstreams/backend_active.conf
